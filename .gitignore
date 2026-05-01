@@ -1,0 +1,19 @@
+# Maven target folder
+target/
+
+# Backend target
+vehicle-rental-system/backend/target/
+
+# Database files
+*.db
+
+# Logs
+*.log
+
+# IDE files
+.idea/
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
