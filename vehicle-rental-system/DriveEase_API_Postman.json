@@ -1,0 +1,232 @@
+{
+  "info": {
+    "name": "DriveEase Vehicle Rental System API",
+    "description": "Complete API collection for the Vehicle Rental Management System. Import this file into Postman to test all endpoints.\n\n**Base URL:** http://localhost:8080/api\n\n**Steps to run:**\n1. Start Spring Boot backend\n2. Import this collection in Postman\n3. Run 'Seed Sample Data' first\n4. Test other endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080/api", "type": "string" }
+  ],
+  "item": [
+
+    {
+      "name": "🏢 Admin",
+      "item": [
+        {
+          "name": "Admin Login",
+          "request": {
+            "method": "POST", "url": "{{baseUrl}}/admin/login",
+            "header": [{"key":"Content-Type","value":"application/json"}],
+            "body": {"mode":"raw","raw":"{\"username\":\"admin\",\"password\":\"admin123\"}"}
+          }
+        },
+        {
+          "name": "Seed Sample Data",
+          "request": {
+            "method": "POST", "url": "{{baseUrl}}/admin/seed",
+            "header": [{"key":"Content-Type","value":"application/json"}],
+            "body": {"mode":"raw","raw":"{}"}
+          }
+        },
+        {
+          "name": "Get Dashboard",
+          "request": {
+            "method": "GET",
+            "url": { "raw":"{{baseUrl}}/admin/dashboard?startDate=2024-01-01&endDate=2099-12-31",
+              "host":["{{baseUrl}}"],"path":["admin","dashboard"],
+              "query":[{"key":"startDate","value":"2024-01-01"},{"key":"endDate","value":"2099-12-31"}]
+            }
+          }
+        },
+        { "name": "Get All Customers", "request": {"method":"GET","url":"{{baseUrl}}/admin/customers"} },
+        { "name": "Get All Drivers", "request": {"method":"GET","url":"{{baseUrl}}/admin/drivers"} },
+        { "name": "Get All Vehicles", "request": {"method":"GET","url":"{{baseUrl}}/admin/vehicles"} },
+        { "name": "Get All Rentals", "request": {"method":"GET","url":"{{baseUrl}}/admin/rentals"} },
+        { "name": "Get All Requests", "request": {"method":"GET","url":"{{baseUrl}}/admin/requests"} }
+      ]
+    },
+
+    {
+      "name": "🚗 Vehicles",
+      "item": [
+        { "name": "Get All Vehicles", "request": {"method":"GET","url":"{{baseUrl}}/vehicles"} },
+        { "name": "Get Available Vehicles", "request": {"method":"GET","url":"{{baseUrl}}/vehicles/available"} },
+        { "name": "Get Rented Vehicles", "request": {"method":"GET","url":"{{baseUrl}}/vehicles/rented"} },
+        { "name": "Get Vehicle by ID", "request": {"method":"GET","url":"{{baseUrl}}/vehicles/1"} },
+        {
+          "name": "Add Vehicle",
+          "request": {
+            "method":"POST","url":"{{baseUrl}}/vehicles",
+            "header":[{"key":"Content-Type","value":"application/json"}],
+            "body":{"mode":"raw","raw":"{\n  \"type\": \"Car\",\n  \"category\": \"Luxury\",\n  \"brand\": \"BMW\",\n  \"model\": \"3 Series\",\n  \"regNo\": \"KA10ZZ9999\",\n  \"rentPerDay\": 8000\n}"}
+          }
+        },
+        {
+          "name": "Update Vehicle",
+          "request": {
+            "method":"PUT","url":"{{baseUrl}}/vehicles/1",
+            "header":[{"key":"Content-Type","value":"application/json"}],
+            "body":{"mode":"raw","raw":"{\n  \"rentPerDay\": 5500\n}"}
+          }
+        },
+        { "name": "Delete Vehicle", "request": {"method":"DELETE","url":"{{baseUrl}}/vehicles/999"} }
+      ]
+    },
+
+    {
+      "name": "👤 Customers",
+      "item": [
+        { "name": "Get All Customers", "request": {"method":"GET","url":"{{baseUrl}}/customers"} },
+        { "name": "Get Customer by ID", "request": {"method":"GET","url":"{{baseUrl}}/customers/1"} },
+        { "name": "Get Rented Customers", "request": {"method":"GET","url":"{{baseUrl}}/customers/rented"} },
+        {
+          "name": "Register Customer",
+          "request": {
+            "method":"POST","url":"{{baseUrl}}/customers/register",
+            "header":[{"key":"Content-Type","value":"application/json"}],
+            "body":{"mode":"raw","raw":"{\n  \"name\": \"Test User\",\n  \"username\": \"testuser\",\n  \"password\": \"test123\",\n  \"phone\": \"9876500000\",\n  \"address\": \"Chennai\"\n}"}
+          }
+        },
+        {
+          "name": "Customer Login",
+          "request": {
+            "method":"POST","url":"{{baseUrl}}/customers/login",
+            "header":[{"key":"Content-Type","value":"application/json"}],
+            "body":{"mode":"raw","raw":"{\n  \"username\": \"alice\",\n  \"password\": \"pass123\"\n}"}
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "🧑‍✈️ Drivers",
+      "item": [
+        { "name": "Get All Drivers", "request": {"method":"GET","url":"{{baseUrl}}/drivers"} },
+        { "name": "Get Available Drivers", "request": {"method":"GET","url":"{{baseUrl}}/drivers/available"} },
+        { "name": "Get Driver by ID", "request": {"method":"GET","url":"{{baseUrl}}/drivers/1"} },
+        {
+          "name": "Register Driver",
+          "request": {
+            "method":"POST","url":"{{baseUrl}}/drivers/register",
+            "header":[{"key":"Content-Type","value":"application/json"}],
+            "body":{"mode":"raw","raw":"{\n  \"name\": \"New Driver\",\n  \"username\": \"newdriver1\",\n  \"password\": \"pass123\",\n  \"phone\": \"9876500001\",\n  \"licenseNumber\": \"DL999999\"\n}"}
+          }
+        },
+        {
+          "name": "Driver Login",
+          "request": {
+            "method":"POST","url":"{{baseUrl}}/drivers/login",
+            "header":[{"key":"Content-Type","value":"application/json"}],
+            "body":{"mode":"raw","raw":"{\n  \"username\": \"john123\",\n  \"password\": \"pass123\"\n}"}
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "📋 Rentals — Self Drive",
+      "item": [
+        {
+          "name": "Book Self Drive",
+          "request": {
+            "method":"POST","url":"{{baseUrl}}/rentals/self-drive",
+            "header":[{"key":"Content-Type","value":"application/json"}],
+            "body":{"mode":"raw","raw":"{\n  \"customerId\": 1,\n  \"vehicleId\": 1,\n  \"days\": 3,\n  \"loyaltyPointsToUse\": 0,\n  \"paymentMode\": \"UPI\"\n}"}
+          }
+        },
+        {
+          "name": "Return Self Drive Vehicle",
+          "request": {
+            "method":"POST","url":"{{baseUrl}}/rentals/1/return",
+            "header":[{"key":"Content-Type","value":"application/json"}],
+            "body":{"mode":"raw","raw":"{\n  \"returnDate\": \"2025-04-25\",\n  \"damage\": false,\n  \"paymentMode\": \"Cash\"\n}"}
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "🧑‍✈️ Rentals — With Driver",
+      "item": [
+        {
+          "name": "1. Request Trip (Customer)",
+          "request": {
+            "method":"POST","url":"{{baseUrl}}/rentals/with-driver/request",
+            "header":[{"key":"Content-Type","value":"application/json"}],
+            "body":{"mode":"raw","raw":"{\n  \"customerId\": 2,\n  \"vehicleId\": 2,\n  \"driverId\": 1,\n  \"pickupLocation\": \"Bangalore Airport\",\n  \"dropLocation\": \"MG Road\",\n  \"pickupDate\": \"2025-04-22\",\n  \"pickupTime\": \"10:00:00\"\n}"}
+          }
+        },
+        {
+          "name": "2. Driver Responds (Accept/Reject)",
+          "request": {
+            "method":"POST","url":"{{baseUrl}}/rentals/requests/1001/respond",
+            "header":[{"key":"Content-Type","value":"application/json"}],
+            "body":{"mode":"raw","raw":"{\n  \"driverId\": 1,\n  \"action\": \"ACCEPT\"\n}"}
+          }
+        },
+        {
+          "name": "3. Driver Starts Trip",
+          "request": {
+            "method":"POST","url":"{{baseUrl}}/rentals/1/start",
+            "header":[{"key":"Content-Type","value":"application/json"}],
+            "body":{"mode":"raw","raw":"{\n  \"driverId\": 1\n}"}
+          }
+        },
+        {
+          "name": "4. Driver Completes Trip",
+          "request": {
+            "method":"POST","url":"{{baseUrl}}/rentals/1/complete",
+            "header":[{"key":"Content-Type","value":"application/json"}],
+            "body":{"mode":"raw","raw":"{\n  \"driverId\": 1,\n  \"distance\": 25.5,\n  \"dropLocation\": \"MG Road, Bangalore\",\n  \"damage\": false\n}"}
+          }
+        },
+        {
+          "name": "5. Customer Pays",
+          "request": {
+            "method":"POST","url":"{{baseUrl}}/rentals/1/pay",
+            "header":[{"key":"Content-Type","value":"application/json"}],
+            "body":{"mode":"raw","raw":"{\n  \"customerId\": 2,\n  \"paymentMode\": \"UPI\",\n  \"loyaltyPointsToUse\": 0\n}"}
+          }
+        },
+        {
+          "name": "6. Customer Rates Driver",
+          "request": {
+            "method":"POST","url":"{{baseUrl}}/rentals/1/rate",
+            "header":[{"key":"Content-Type","value":"application/json"}],
+            "body":{"mode":"raw","raw":"{\n  \"customerId\": 2,\n  \"rating\": 5\n}"}
+          }
+        },
+        {
+          "name": "Cancel Rental",
+          "request": {
+            "method":"POST","url":"{{baseUrl}}/rentals/1/cancel",
+            "header":[{"key":"Content-Type","value":"application/json"}],
+            "body":{"mode":"raw","raw":"{\n  \"customerId\": 2,\n  \"paymentMode\": \"Cash\"\n}"}
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "🔍 Queries",
+      "item": [
+        { "name": "Get Customer Rentals", "request": {"method":"GET","url":"{{baseUrl}}/rentals/customer/1"} },
+        { "name": "Get Driver Rentals", "request": {"method":"GET","url":"{{baseUrl}}/rentals/driver/1"} },
+        { "name": "Get Driver Active Rentals", "request": {"method":"GET","url":"{{baseUrl}}/rentals/driver/1/active"} },
+        { "name": "Get Driver Pending Requests", "request": {"method":"GET","url":"{{baseUrl}}/rentals/requests/driver/1"} },
+        { "name": "Get Customer Requests", "request": {"method":"GET","url":"{{baseUrl}}/rentals/requests/customer/1"} },
+        { "name": "Get All Requests", "request": {"method":"GET","url":"{{baseUrl}}/rentals/requests"} },
+        {
+          "name": "Revenue Dashboard",
+          "request": {
+            "method":"GET",
+            "url":{"raw":"{{baseUrl}}/rentals/dashboard?startDate=2024-01-01&endDate=2099-12-31",
+              "host":["{{baseUrl}}"],"path":["rentals","dashboard"],
+              "query":[{"key":"startDate","value":"2024-01-01"},{"key":"endDate","value":"2099-12-31"}]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

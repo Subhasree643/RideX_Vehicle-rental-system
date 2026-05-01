@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel — RideX</title>
+<link rel="stylesheet" href="../css/style.css">
+<script>
+  (function() {
+    const t = localStorage.getItem('ridex-theme');
+    if (t) document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
+</head>
+<body>
+
+<div id="authScreen" class="auth-page">
+  <div class="auth-bg"><div class="grid-lines"></div><div class="blob blob-1"></div></div>
+  <div class="auth-card">
+    <a href="../index.html" class="back-link">← Back to Home</a>
+    <div class="logo">Ride<em>X</em></div>
+    <div class="auth-subtitle">Administrator Access</div>
+    <div class="form-group" style="margin-bottom:16px"><label>Admin Username</label><input type="text" id="adminUser" value="admin" placeholder="admin"></div>
+    <div class="form-group" style="margin-bottom:24px"><label>Admin Password</label><input type="password" id="adminPass" value="admin123" placeholder="admin123"></div>
+    <button class="btn btn-accent btn-full" onclick="doAdminLogin()">🏢 Login as Admin</button>
+  </div>
+</div>
+
+<div id="dashboard" style="display:none">
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-logo">Ride<em>X</em></div>
+      <div class="sidebar-user">Admin Panel<strong>System Administrator</strong></div>
+      <nav class="sidebar-nav">
+        <div class="nav-item active" onclick="showPanel('home',this)"><span class="nav-icon">📊</span> Dashboard</div>
+        <div class="nav-item" onclick="showPanel('vehicles',this)"><span class="nav-icon">🚗</span> Vehicles</div>
+        <div class="nav-item" onclick="showPanel('customers',this)"><span class="nav-icon">👥</span> Customers</div>
+        <div class="nav-item" onclick="showPanel('drivers',this)"><span class="nav-icon">🧑‍✈️</span> Drivers</div>
+        <div class="nav-item" onclick="showPanel('rentals',this)"><span class="nav-icon">📋</span> All Rentals</div>
+        <div class="nav-item" onclick="showPanel('requests',this)"><span class="nav-icon">📡</span> All Driver Requests</div>
+        <div class="nav-item" onclick="showPanel('revenue',this)"><span class="nav-icon">💹</span> Revenue</div>
+      </nav>
+      <div class="sidebar-bottom">
+        <button class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Theme">☀️</button>
+        <button class="logout-btn" onclick="doLogout()">🚪 Logout</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div id="panel-home" class="panel active">
+        <div class="page-header"><h1>System Overview 📊</h1></div>
+        <div id="adminStats" class="stats-row"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+          <div class="card">
+            <div class="card-title">🚗 Available Vehicles</div>
+            <div class="table-wrap"><table>
+              <thead><tr><th>Vehicle</th><th>Type</th><th>Rate/Day</th></tr></thead>
+              <tbody id="availVehiclesTbl"></tbody>
+            </table></div>
+          </div>
+          <div class="card">
+            <div class="card-title">🧑‍✈️ Available Drivers</div>
+            <div class="table-wrap"><table>
+              <thead><tr><th>Name</th><th>Rating</th><th>Phone</th></tr></thead>
+              <tbody id="availDriversTbl"></tbody>
+            </table></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="panel-vehicles" class="panel">
+        <div class="page-header"><h1>🚗 Vehicle Management</h1></div>
+        <div class="card">
+          <div class="card-title">➕ Add New Vehicle</div>
+          <div class="form-grid">
+            <div class="form-group"><label>Type</label>
+              <select id="vType"><option>Car</option><option>Bike</option></select></div>
+            <div class="form-group"><label>Category</label>
+              <select id="vCat"><option>SUV</option><option>Sedan</option><option>Mini</option><option>Luxury</option><option>Sports</option><option>Cruiser</option><option>Scooter</option></select></div>
+            <div class="form-group"><label>Brand</label><input type="text" id="vBrand" placeholder="e.g. Toyota"></div>
+            <div class="form-group"><label>Model</label><input type="text" id="vModel" placeholder="e.g. Fortuner"></div>
+            <div class="form-group"><label>Reg. Number</label><input type="text" id="vReg" placeholder="KA01AB1234"></div>
+            <div class="form-group"><label>Rent Per Day (₹)</label><input type="number" id="vRent" placeholder="3000"></div>
+          </div>
+          <button class="btn btn-accent" onclick="addVehicle()">➕ Add Vehicle</button>
+        </div>
+        <div class="card">
+          <div class="card-title">All Vehicles</div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>ID</th><th>Vehicle</th><th>Type</th><th>Category</th><th>Reg No.</th><th>Rate/Day</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="vehiclesTbl"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <div id="panel-customers" class="panel">
+        <div class="page-header"><h1>👥 Customer Management</h1></div>
+        <div class="card">
+          <div class="table-wrap"><table>
+            <thead><tr><th>ID</th><th>Name</th><th>Username</th><th>Phone</th><th>Points</th><th>Status</th></tr></thead>
+            <tbody id="customersTbl"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <div id="panel-drivers" class="panel">
+        <div class="page-header"><h1>🧑‍✈️ Driver Management</h1></div>
+        <div class="card">
+          <div class="table-wrap"><table>
+            <thead><tr><th>ID</th><th>Name</th><th>License</th><th>Phone</th><th>Rating</th><th>Status</th></tr></thead>
+            <tbody id="driversTbl"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <div id="panel-rentals" class="panel">
+        <div class="page-header"><h1>📋 All Rentals</h1></div>
+        <div class="card">
+          <div class="table-wrap"><table>
+            <thead><tr><th>ID</th><th>Customer</th><th>Vehicle</th><th>Driver</th><th>Type</th><th>Date</th><th>Amount</th><th>Status</th></tr></thead>
+            <tbody id="rentalsTbl"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <div id="panel-requests" class="panel">
+        <div class="page-header"><h1>📡 All Driver Requests</h1></div>
+        <div class="card">
+          <div class="table-wrap"><table>
+            <thead><tr><th>ID</th><th>Customer</th><th>Driver</th><th>Vehicle</th><th>Pickup</th><th>Drop</th><th>Date</th><th>Status</th></tr></thead>
+            <tbody id="requestsTbl"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <div id="panel-revenue" class="panel">
+        <div class="page-header"><h1>💹 Revenue Dashboard</h1></div>
+        <div class="card">
+          <div class="form-grid" style="max-width:500px">
+            <div class="form-group"><label>Start Date</label><input type="date" id="revStart"></div>
+            <div class="form-group"><label>End Date</label><input type="date" id="revEnd"></div>
+          </div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:4px">
+            <button class="btn btn-accent" onclick="loadRevenue()">📊 Generate Report</button>
+            <button class="btn btn-green" id="downloadExcelBtn" style="display:none" onclick="downloadExcel()">⬇️ Download Excel Report</button>
+          </div>
+        </div>
+        <div id="revenueStats" class="stats-row"></div>
+        <div class="card" id="revenueBreakdown" style="display:none">
+          <div class="card-title">💹 Revenue Breakdown</div>
+          <div id="revenueDetail"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- EDIT VEHICLE MODAL -->
+<div id="editVehicleModal" style="display:none" class="modal-overlay" onclick="if(event.target===this)closeEditModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>✏️ Edit Vehicle</h3>
+      <button class="modal-close" onclick="closeEditModal()">×</button>
+    </div>
+    <input type="hidden" id="editVId">
+    <div class="form-grid">
+      <div class="form-group"><label>Type</label>
+        <select id="editVType"><option>Car</option><option>Bike</option></select></div>
+      <div class="form-group"><label>Category</label>
+        <select id="editVCat"><option>SUV</option><option>Sedan</option><option>Mini</option><option>Luxury</option><option>Sports</option><option>Cruiser</option><option>Scooter</option></select></div>
+      <div class="form-group"><label>Brand</label><input type="text" id="editVBrand"></div>
+      <div class="form-group"><label>Model</label><input type="text" id="editVModel"></div>
+      <div class="form-group"><label>Reg. Number</label><input type="text" id="editVReg"></div>
+      <div class="form-group"><label>Rent Per Day (₹)</label><input type="number" id="editVRent"></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn btn-accent" onclick="saveVehicleEdit()">💾 Save Changes</button>
+      <button class="btn btn-outline" onclick="closeEditModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="../js/api.js"></script>
+<script>
+
+// ===== THEME =====
+function toggleTheme() {
+  const curr = document.documentElement.getAttribute('data-theme');
+  const next = curr === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('ridex-theme', next);
+  document.querySelectorAll('.theme-toggle-btn').forEach(btn=>btn.textContent=next==='dark'?'☀️':'🌙');
+}
+
+// ===== AUTH =====
+function doAdminLogin() {
+  apiPost('/admin/login', {
+    username: document.getElementById('adminUser').value,
+    password: document.getElementById('adminPass').value
+  }).then(() => {
+    document.getElementById('authScreen').style.display='none';
+    document.getElementById('dashboard').style.display='block';
+    loadHome();
+  }).catch(e => showToast(e.message,'error'));
+}
+
+function doLogout() {
+  document.getElementById('dashboard').style.display='none';
+  document.getElementById('authScreen').style.display='flex';
+}
+
+// ===== NAVIGATION =====
+function showPanel(name, el) {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  if(el) el.classList.add('active');
+  const loaders = { vehicles:loadVehicles, customers:loadCustomers, drivers:loadDrivers, rentals:loadRentals, requests:loadRequests };
+  if(loaders[name]) loaders[name]();
+}
+
+// ===== ID FORMATTERS =====
+function fmtCustomerId(id) { return '#' + (100 + id); }
+function fmtDriverId(id)   { return '#' + (200 + id); }
+function fmtRentalId(id)   { return '#R' + String(id).padStart(3,'0'); }
+function fmtRequestId(id)  { return '#D' + String(id).padStart(3,'0'); }
+
+// ===== HOME =====
+async function loadHome() {
+  try {
+    const [customers, drivers, vehicles, dashboard] = await Promise.all([
+      apiGet('/customers').catch(()=>[]),
+      apiGet('/drivers').catch(()=>[]),
+      apiGet('/vehicles').catch(()=>[]),
+      apiGet('/admin/dashboard').catch(()=>({}))
+    ]);
+    const avail = vehicles.filter(v=>v.available);
+    const availDrivers = drivers.filter(d=>d.available);
+    document.getElementById('adminStats').innerHTML = `
+      <div class="stat-card accent"><div class="stat-label">Total Revenue</div><div class="stat-val">${fmtCurrency(dashboard.totalRevenue||0)}</div></div>
+      <div class="stat-card green"><div class="stat-label">Total Customers</div><div class="stat-val">${customers.length}</div></div>
+      <div class="stat-card"><div class="stat-label">Total Drivers</div><div class="stat-val">${drivers.length}</div></div>
+      <div class="stat-card yellow"><div class="stat-label">Total Vehicles</div><div class="stat-val">${vehicles.length}</div></div>
+      <div class="stat-card green"><div class="stat-label">Available Vehicles</div><div class="stat-val">${avail.length}</div></div>
+      <div class="stat-card"><div class="stat-label">Active Rentals</div><div class="stat-val">${dashboard.activeRentals||0}</div></div>
+    `;
+    document.getElementById('availVehiclesTbl').innerHTML = avail.length
+      ? avail.map(v=>`<tr><td>${vehicleEmoji(v.type,v.category)} ${v.brand} ${v.model}</td><td>${v.type}</td><td>${fmtCurrency(v.rentPerDay)}</td></tr>`).join('')
+      : '<tr><td colspan="3" style="text-align:center;color:var(--text3);padding:16px">None available</td></tr>';
+    document.getElementById('availDriversTbl').innerHTML = availDrivers.length
+      ? availDrivers.map(d=>`<tr><td>${d.name}</td><td>${d.rating.toFixed(1)}⭐</td><td>${d.phone}</td></tr>`).join('')
+      : '<tr><td colspan="3" style="text-align:center;color:var(--text3);padding:16px">None available</td></tr>';
+  } catch(e) { console.error('loadHome error:', e); }
+}
+
+// ===== VEHICLES =====
+async function loadVehicles() {
+  try {
+    const vehicles = await apiGet('/vehicles');
+    document.getElementById('vehiclesTbl').innerHTML = vehicles.length ? vehicles.map(v=>`
+      <tr>
+        <td>#${v.id}</td>
+        <td>${vehicleEmoji(v.type,v.category)} ${v.brand} ${v.model}</td>
+        <td>${v.type}</td><td>${v.category}</td><td>${v.regNo}</td>
+        <td>${fmtCurrency(v.rentPerDay)}</td>
+        <td>${v.available?'<span class="badge badge-green">Available</span>':'<span class="badge badge-red">Rented</span>'}</td>
+        <td style="display:flex;gap:6px">
+          <button class="btn btn-sm btn-yellow" onclick="openEditModal(${v.id},'${v.type}','${v.category}','${v.brand}','${v.model}','${v.regNo}',${v.rentPerDay})">✏️ Edit</button>
+          <button class="btn btn-sm btn-red" onclick="deleteVehicle(${v.id})">🗑️</button>
+        </td>
+      </tr>`).join('')
+      : '<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:24px">No vehicles</td></tr>';
+  } catch(e) {
+    document.getElementById('vehiclesTbl').innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:24px">Error loading</td></tr>';
+  }
+}
+
+async function addVehicle() {
+  try {
+    await apiPost('/vehicles', {
+      type: document.getElementById('vType').value,
+      category: document.getElementById('vCat').value,
+      brand: document.getElementById('vBrand').value,
+      model: document.getElementById('vModel').value,
+      regNo: document.getElementById('vReg').value,
+      rentPerDay: parseFloat(document.getElementById('vRent').value)
+    });
+    showToast('Vehicle added successfully!','success');
+    loadVehicles();
+    ['vBrand','vModel','vReg','vRent'].forEach(id=>document.getElementById(id).value='');
+  } catch(e) { showToast(e.message,'error'); }
+}
+
+async function deleteVehicle(id) {
+  if(!confirm('Delete this vehicle?')) return;
+  try {
+    await apiDelete('/vehicles/'+id);
+    showToast('Vehicle deleted','success');
+    loadVehicles();
+  } catch(e) { showToast(e.message,'error'); }
+}
+
+function openEditModal(id, type, cat, brand, model, reg, rent) {
+  document.getElementById('editVId').value=id;
+  document.getElementById('editVType').value=type;
+  document.getElementById('editVCat').value=cat;
+  document.getElementById('editVBrand').value=brand;
+  document.getElementById('editVModel').value=model;
+  document.getElementById('editVReg').value=reg;
+  document.getElementById('editVRent').value=rent;
+  document.getElementById('editVehicleModal').style.display='flex';
+}
+
+function closeEditModal() { document.getElementById('editVehicleModal').style.display='none'; }
+
+async function saveVehicleEdit() {
+  const id = document.getElementById('editVId').value;
+  try {
+    await apiPut('/vehicles/'+id, {
+      type: document.getElementById('editVType').value,
+      category: document.getElementById('editVCat').value,
+      brand: document.getElementById('editVBrand').value,
+      model: document.getElementById('editVModel').value,
+      regNo: document.getElementById('editVReg').value,
+      rentPerDay: parseFloat(document.getElementById('editVRent').value)
+    });
+    showToast('Vehicle updated!','success');
+    closeEditModal(); loadVehicles();
+  } catch(e) { showToast(e.message,'error'); }
+}
+
+// ===== CUSTOMERS =====
+async function loadCustomers() {
+  try {
+    const customers = await apiGet('/customers').catch(()=>[]);
+    document.getElementById('customersTbl').innerHTML = customers.map(c=>`
+      <tr>
+        <td>${fmtCustomerId(c.id)}</td>
+        <td>${c.name}</td><td>${c.username}</td><td>${c.phone}</td>
+        <td><span class="badge badge-purple">${c.loyaltyPoints||0} pts</span></td>
+        <td>${c.rented?'<span class="badge badge-yellow">Rented</span>':'<span class="badge badge-green">Free</span>'}</td>
+      </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:30px">No customers found</td></tr>';
+  } catch(e) {
+    document.getElementById('customersTbl').innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:30px">Error loading</td></tr>';
+  }
+}
+
+// ===== DRIVERS =====
+async function loadDrivers() {
+  try {
+    const drivers = await apiGet('/drivers').catch(()=>[]);
+    document.getElementById('driversTbl').innerHTML = drivers.map(d=>`
+      <tr>
+        <td>${fmtDriverId(d.id)}</td>
+        <td>${d.name}</td><td>${d.licenseNumber||'—'}</td><td>${d.phone}</td>
+        <td>⭐ ${d.rating?.toFixed(2)||0} (${d.totalRatings||0})</td>
+        <td>${d.available?'<span class="badge badge-green">Available</span>':'<span class="badge badge-yellow">Busy</span>'}</td>
+      </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:30px">No drivers found</td></tr>';
+  } catch(e) {
+    document.getElementById('driversTbl').innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:30px">Error loading</td></tr>';
+  }
+}
+
+// ===== RENTALS =====
+async function loadRentals() {
+  try {
+    const rentals = await apiGet('/admin/rentals').catch(()=>[]);
+    document.getElementById('rentalsTbl').innerHTML = rentals.length ? [...rentals].reverse().map(r=>`
+      <tr>
+        <td>${fmtRentalId(r.id)}</td>
+        <td>${r.customer?.name||'—'}</td>
+        <td>${r.vehicle?.brand||''} ${r.vehicle?.model||''}</td>
+        <td>${r.driver?.name||'Self'}</td>
+        <td>${r.rentalType==='SELF_DRIVE'?'🔑 Self':'🧑‍✈️ Driver'}</td>
+        <td>${fmtDate(r.rentDate)}</td>
+        <td>${fmtCurrency(r.rentAmount||0)}</td>
+        <td>${statusBadge(r.status)}</td>
+      </tr>`).join('')
+      : '<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:24px">No rentals found</td></tr>';
+  } catch(e) {
+    document.getElementById('rentalsTbl').innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:24px">Error loading rentals</td></tr>';
+  }
+}
+
+// ===== REQUESTS =====
+async function loadRequests() {
+  try {
+    const reqs = await apiGet('/rentals/requests').catch(()=>[]);
+    document.getElementById('requestsTbl').innerHTML = reqs.length ? [...reqs].reverse().map(r=>`
+      <tr>
+        <td>${fmtRequestId(r.id)}</td>
+        <td>${r.customer?.name||'—'}</td>
+        <td>${r.driver?.name||'—'}</td>
+        <td>${r.vehicle?.brand||''} ${r.vehicle?.model||''}</td>
+        <td>${r.pickupLocation||'—'}</td>
+        <td>${r.dropLocation||'—'}</td>
+        <td>${fmtDate(r.pickupDate)}</td>
+        <td>${statusBadge(r.status)}</td>
+      </tr>`).join('')
+      : '<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:30px">No driver requests found</td></tr>';
+  } catch(e) {
+    document.getElementById('requestsTbl').innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:30px">Error loading</td></tr>';
+  }
+}
+
+// ===== REVENUE =====
+let currentReportData = null;
+
+async function loadRevenue() {
+  const start = document.getElementById('revStart').value || '2024-01-01';
+  const end   = document.getElementById('revEnd').value   || '2099-12-31';
+  try {
+    const data = await apiGet(`/admin/dashboard?startDate=${start}&endDate=${end}`);
+    document.getElementById('revenueStats').innerHTML = `
+      <div class="stat-card accent"><div class="stat-label">Total Revenue</div><div class="stat-val">${fmtCurrency(data.totalRevenue||0)}</div></div>
+      <div class="stat-card green"><div class="stat-label">Trips Completed</div><div class="stat-val">${data.totalTrips||0}</div></div>
+      <div class="stat-card yellow"><div class="stat-label">Active Rentals</div><div class="stat-val">${data.activeRentals||0}</div></div>
+      <div class="stat-card"><div class="stat-label">Total Customers</div><div class="stat-val">${data.totalCustomers||0}</div></div>
+      <div class="stat-card"><div class="stat-label">Total Vehicles</div><div class="stat-val">${data.totalVehicles||0}</div></div>
+      <div class="stat-card green"><div class="stat-label">Available Vehicles</div><div class="stat-val">${data.availableVehicles||0}</div></div>
+    `;
+    document.getElementById('revenueBreakdown').style.display = 'block';
+    const avg = data.totalTrips > 0 ? (data.totalRevenue / data.totalTrips) : 0;
+    document.getElementById('revenueDetail').innerHTML = `
+      <div class="invoice">
+        <div class="invoice-row"><span>Period</span><span>${start} → ${end}</span></div>
+        <div class="invoice-row"><span>Total Revenue</span><span>${fmtCurrency(data.totalRevenue||0)}</span></div>
+        <div class="invoice-row"><span>Trips Completed</span><span>${data.totalTrips||0}</span></div>
+        <div class="invoice-row"><span>Avg Revenue / Trip</span><span>${fmtCurrency(avg)}</span></div>
+        <div class="invoice-row total"><span>Net Revenue (est. 70%)</span><span>${fmtCurrency((data.totalRevenue||0)*0.7)}</span></div>
+      </div>`;
+
+    // Fetch all rentals and filter by date range for Excel
+    const allRentals = await apiGet('/admin/rentals').catch(()=>[]);
+    currentReportData = {
+      rentals: allRentals.filter(r => r.rentDate && r.rentDate >= start && r.rentDate <= end),
+      summary: data,
+      startDate: start,
+      endDate: end
+    };
+    document.getElementById('downloadExcelBtn').style.display = 'inline-flex';
+    showToast(`✅ Report ready! ${currentReportData.rentals.length} bookings found.`, 'success');
+  } catch(e) {
+    showToast('Error loading revenue: ' + e.message, 'error');
+  }
+}
+
+// ===== EXCEL DOWNLOAD =====
+function downloadExcel() {
+  if (!currentReportData) return showToast('Generate report first!', 'error');
+  buildAndDownloadExcel();
+}
+
+function buildAndDownloadExcel() {
+  const { rentals, summary, startDate, endDate } = currentReportData;
+  const wb = XLSX.utils.book_new();
+
+  // ===== SHEET 1: BOOKING DETAILS =====
+  const bookingHeaders = [
+    'Rental ID', 'Booking Type', 'Status',
+    'Customer Name', 'Customer ID', 'Customer Phone', 'Customer Address',
+    'Vehicle', 'Vehicle Type', 'Vehicle Category', 'Reg No.',
+    'Driver Name', 'Driver Phone', 'Driver License',
+    'Rent Date', 'Return Date', 'Booking Time',
+    'Pickup Location', 'Drop Location',
+    'Days', 'Hours', 'Distance (km)',
+    'Base Amount (Rs.)', 'Damage Fee (Rs.)', 'Final Amount (Rs.)',
+    'Payment Mode', 'Customer Rating'
+  ];
+
+  const bookingRows = rentals.map(r => [
+    '#R' + String(r.id).padStart(3,'0'),
+    r.rentalType === 'SELF_DRIVE' ? 'Self Drive' : 'With Driver',
+    r.status,
+    r.customer?.name || '—',
+    r.customer ? '#' + (100 + r.customer.id) : '—',
+    r.customer?.phone || '—',
+    r.customer?.address || '—',
+    `${r.vehicle?.brand||''} ${r.vehicle?.model||''}`.trim(),
+    r.vehicle?.type || '—',
+    r.vehicle?.category || '—',
+    r.vehicle?.regNo || '—',
+    r.driver?.name || 'Self Drive',
+    r.driver?.phone || '—',
+    r.driver?.licenseNumber || '—',
+    r.rentDate || '—',
+    r.returnDate || '—',
+    r.bookingTime ? new Date(r.bookingTime).toLocaleString('en-IN') : '—',
+    r.pickupLocation || '—',
+    r.dropLocation || '—',
+    r.days || 0,
+    r.hours || 0,
+    r.distance || 0,
+    r.originalRentAmount || r.rentAmount || 0,
+    r.damageFee || 0,
+    r.rentAmount || 0,
+    r.paymentMode || '—',
+    r.customerRating ? `${r.customerRating} Stars` : '—'
+  ]);
+
+  const ws1 = XLSX.utils.aoa_to_sheet([bookingHeaders, ...bookingRows]);
+  ws1['!cols'] = [
+    {wch:10},{wch:14},{wch:12},
+    {wch:22},{wch:12},{wch:15},{wch:22},
+    {wch:20},{wch:8},{wch:12},{wch:14},
+    {wch:18},{wch:14},{wch:16},
+    {wch:14},{wch:14},{wch:22},
+    {wch:24},{wch:24},
+    {wch:7},{wch:7},{wch:14},
+    {wch:18},{wch:16},{wch:18},
+    {wch:14},{wch:14}
+  ];
+  XLSX.utils.book_append_sheet(wb, ws1, 'Booking Details');
+
+  // ===== SHEET 2: CUSTOMER SUMMARY =====
+  const custMap = {};
+  rentals.forEach(r => {
+    if (!r.customer) return;
+    const id = r.customer.id;
+    if (!custMap[id]) {
+      custMap[id] = {
+        id: '#' + (100 + id),
+        name: r.customer.name,
+        phone: r.customer.phone || '—',
+        address: r.customer.address || '—',
+        trips: 0, selfDrive: 0, withDriver: 0,
+        completed: 0, cancelled: 0, totalSpent: 0
+      };
+    }
+    custMap[id].trips++;
+    if (r.rentalType === 'SELF_DRIVE') custMap[id].selfDrive++;
+    else custMap[id].withDriver++;
+    if (r.status === 'COMPLETED') { custMap[id].completed++; custMap[id].totalSpent += (r.rentAmount||0); }
+    if (r.status === 'CANCELLED') custMap[id].cancelled++;
+  });
+
+  const ws2 = XLSX.utils.aoa_to_sheet([
+    ['Customer ID','Name','Phone','Address','Total Trips','Self Drive','With Driver','Completed','Cancelled','Total Spent (Rs.)'],
+    ...Object.values(custMap).map(c=>[c.id,c.name,c.phone,c.address,c.trips,c.selfDrive,c.withDriver,c.completed,c.cancelled,c.totalSpent.toFixed(2)])
+  ]);
+  ws2['!cols'] = [{wch:12},{wch:22},{wch:15},{wch:25},{wch:12},{wch:12},{wch:14},{wch:12},{wch:12},{wch:18}];
+  XLSX.utils.book_append_sheet(wb, ws2, 'Customer Summary');
+
+  // ===== SHEET 3: DRIVER SUMMARY =====
+  const driverMap = {};
+  rentals.forEach(r => {
+    if (!r.driver) return;
+    const id = r.driver.id;
+    if (!driverMap[id]) {
+      driverMap[id] = {
+        id: '#' + (200 + id),
+        name: r.driver.name,
+        phone: r.driver.phone || '—',
+        license: r.driver.licenseNumber || '—',
+        trips: 0, completed: 0,
+        totalHours: 0, totalKm: 0,
+        earnings: 0, ratings: []
+      };
+    }
+    driverMap[id].trips++;
+    if (r.status === 'COMPLETED') {
+      driverMap[id].completed++;
+      driverMap[id].totalHours += (r.hours||0);
+      driverMap[id].totalKm   += (r.distance||0);
+      driverMap[id].earnings  += ((r.hours||0)*50 + (r.distance||0)*8);
+      if (r.customerRating) driverMap[id].ratings.push(r.customerRating);
+    }
+  });
+
+  const ws3 = XLSX.utils.aoa_to_sheet([
+    ['Driver ID','Name','Phone','License No.','Total Trips','Completed','Total Hours','Total KM','Driver Earnings (Rs.)','Avg Rating'],
+    ...Object.values(driverMap).map(d => {
+      const avg = d.ratings.length ? (d.ratings.reduce((a,b)=>a+b,0)/d.ratings.length).toFixed(1) : '—';
+      return [d.id,d.name,d.phone,d.license,d.trips,d.completed,d.totalHours,d.totalKm.toFixed(1),d.earnings.toFixed(2),avg];
+    })
+  ]);
+  ws3['!cols'] = [{wch:10},{wch:20},{wch:14},{wch:16},{wch:12},{wch:12},{wch:14},{wch:12},{wch:22},{wch:12}];
+  XLSX.utils.book_append_sheet(wb, ws3, 'Driver Summary');
+
+  // ===== SHEET 4: PAYMENT SUMMARY =====
+  const payMap = {};
+  let totalRevenue = 0;
+  rentals.filter(r=>r.status==='COMPLETED'&&r.paymentMode).forEach(r => {
+    const pm = r.paymentMode;
+    if (!payMap[pm]) payMap[pm] = { count:0, amount:0 };
+    payMap[pm].count++;
+    payMap[pm].amount += (r.rentAmount||0);
+    totalRevenue += (r.rentAmount||0);
+  });
+
+  const payRows = Object.entries(payMap).map(([mode,d])=>[
+    mode, d.count, d.amount.toFixed(2),
+    totalRevenue > 0 ? ((d.amount/totalRevenue)*100).toFixed(1)+'%' : '0%'
+  ]);
+  payRows.push(['','','','']);
+  payRows.push(['TOTAL', Object.values(payMap).reduce((s,d)=>s+d.count,0), totalRevenue.toFixed(2), '100%']);
+
+  const ws4 = XLSX.utils.aoa_to_sheet([
+    ['Payment Mode','No. of Transactions','Total Amount (Rs.)','% of Revenue'],
+    ...payRows
+  ]);
+  ws4['!cols'] = [{wch:18},{wch:22},{wch:22},{wch:16}];
+  XLSX.utils.book_append_sheet(wb, ws4, 'Payment Summary');
+
+  // ===== SHEET 5: REVENUE SUMMARY =====
+  const completed    = rentals.filter(r=>r.status==='COMPLETED');
+  const selfDriveRev = rentals.filter(r=>r.rentalType==='SELF_DRIVE'&&r.status==='COMPLETED').reduce((s,r)=>s+(r.rentAmount||0),0);
+  const driverRev    = rentals.filter(r=>r.rentalType==='WITH_DRIVER'&&r.status==='COMPLETED').reduce((s,r)=>s+(r.rentAmount||0),0);
+  const cancelFees   = rentals.filter(r=>r.status==='CANCELLED').reduce((s,r)=>s+(r.rentAmount||0),0);
+  const damageTotal  = rentals.reduce((s,r)=>s+(r.damageFee||0),0);
+  const withDriverC  = rentals.filter(r=>r.rentalType==='WITH_DRIVER'&&r.status==='COMPLETED');
+  const avgHours     = withDriverC.length ? (withDriverC.reduce((s,r)=>s+(r.hours||0),0)/withDriverC.length).toFixed(1) : '0';
+  const avgKm        = withDriverC.length ? (withDriverC.reduce((s,r)=>s+(r.distance||0),0)/withDriverC.length).toFixed(1) : '0';
+
+  const ws5 = XLSX.utils.aoa_to_sheet([
+    ['RideX — Revenue Report'],
+    ['Generated On:', new Date().toLocaleString('en-IN')],
+    ['Report Period:', `${startDate} to ${endDate}`],
+    [''],
+    ['BOOKING STATISTICS', ''],
+    ['Total Bookings in Period:', rentals.length],
+    ['Completed Trips:', completed.length],
+    ['Active Rentals:', rentals.filter(r=>['ACTIVE','ACCEPTED','ONGOING'].includes(r.status)).length],
+    ['Cancelled Bookings:', rentals.filter(r=>r.status==='CANCELLED').length],
+    ['Self Drive Bookings:', rentals.filter(r=>r.rentalType==='SELF_DRIVE').length],
+    ['With Driver Bookings:', rentals.filter(r=>r.rentalType==='WITH_DRIVER').length],
+    [''],
+    ['REVENUE BREAKDOWN (Rs.)', ''],
+    ['Self Drive Revenue:', selfDriveRev.toFixed(2)],
+    ['With Driver Revenue:', driverRev.toFixed(2)],
+    ['Cancellation Fees:', cancelFees.toFixed(2)],
+    ['Damage Fees Collected:', damageTotal.toFixed(2)],
+    ['TOTAL GROSS REVENUE:', totalRevenue.toFixed(2)],
+    ['Estimated Net Revenue (70%):', (totalRevenue * 0.7).toFixed(2)],
+    [''],
+    ['AVERAGES', ''],
+    ['Avg Revenue per Trip:', completed.length > 0 ? (totalRevenue/completed.length).toFixed(2) : '0'],
+    ['Avg Trip Duration (hrs):', avgHours],
+    ['Avg Distance (km):', avgKm],
+  ]);
+  ws5['!cols'] = [{wch:35},{wch:25}];
+  XLSX.utils.book_append_sheet(wb, ws5, 'Revenue Summary');
+
+  // ===== DOWNLOAD =====
+  const fileName = `RideX_Report_${startDate}_to_${endDate}.xlsx`;
+  XLSX.writeFile(wb, fileName);
+  showToast(`✅ Excel downloaded: ${fileName}`, 'success');
+}
+
+// ===== INIT =====
+window.addEventListener('load', () => {
+  const today = new Date().toISOString().split('T')[0];
+  const monthStart = today.substring(0,7)+'-01';
+  document.getElementById('revStart').value = monthStart;
+  document.getElementById('revEnd').value = today;
+  const theme = localStorage.getItem('ridex-theme')||'dark';
+  document.querySelectorAll('.theme-toggle-btn').forEach(btn=>btn.textContent=theme==='dark'?'☀️':'🌙');
+});
+
+</script>
+</body>
+</html>

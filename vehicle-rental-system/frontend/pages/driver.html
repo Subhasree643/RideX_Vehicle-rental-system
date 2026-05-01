@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Driver Portal — RideX</title>
+<link rel="stylesheet" href="../css/style.css">
+<script>
+  (function() {
+    const t = localStorage.getItem('ridex-theme');
+    if (t) document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
+</head>
+<body>
+
+<div id="authScreen" class="auth-page">
+  <div class="auth-bg"><div class="grid-lines"></div><div class="blob blob-1"></div><div class="blob blob-2"></div></div>
+  <div class="auth-card">
+    <a href="../index.html" class="back-link">← Back to Home</a>
+    <div class="logo">Ride<em>X</em></div>
+    <div class="auth-subtitle">Driver Portal</div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchTab('login')">Login</button>
+      <button class="auth-tab" onclick="switchTab('register')">Register</button>
+    </div>
+    <div id="loginForm">
+      <div class="form-group" style="margin-bottom:14px"><label>Username</label><input type="text" id="loginUsername" placeholder="e.g. john123"></div>
+      <div class="form-group" style="margin-bottom:22px"><label>Password</label><input type="password" id="loginPassword" placeholder="Password"></div>
+      <button class="btn btn-accent btn-full" onclick="doLogin()">🧑‍✈️ Login as Driver</button>
+    </div>
+    <div id="registerForm" style="display:none">
+      <div class="form-grid" style="grid-template-columns:1fr 1fr">
+        <div class="form-group"><label>Full Name</label><input type="text" id="regName" placeholder="Your name"></div>
+        <div class="form-group"><label>Username</label><input type="text" id="regUsername" placeholder="Username"></div>
+        <div class="form-group"><label>Password</label><input type="password" id="regPassword" placeholder="Password"></div>
+        <div class="form-group"><label>Phone</label><input type="text" id="regPhone" placeholder="Phone number"></div>
+      </div>
+      <div class="form-group" style="margin-bottom:22px"><label>License Number</label><input type="text" id="regLicense" placeholder="DL123456"></div>
+      <button class="btn btn-accent btn-full" onclick="doRegister()">✅ Register as Driver</button>
+    </div>
+  </div>
+</div>
+
+<div id="dashboard" style="display:none">
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-logo">Ride<em>X</em></div>
+      <div class="sidebar-user">Driver Portal<strong id="sidebarName">—</strong></div>
+      <nav class="sidebar-nav">
+        <div class="nav-item active" onclick="showPanel('home',this)"><span class="nav-icon">🏠</span> Dashboard</div>
+        <div class="nav-item" onclick="showPanel('requests',this)"><span class="nav-icon">📡</span> Pending Requests</div>
+        <div class="nav-item" onclick="showPanel('active',this)"><span class="nav-icon">🚗</span> Active Trips</div>
+        <div class="nav-item" onclick="showPanel('history',this)"><span class="nav-icon">📋</span> Trip History</div>
+        <div class="nav-item" onclick="showPanel('earnings',this)"><span class="nav-icon">💰</span> Earnings</div>
+      </nav>
+      <div class="sidebar-bottom">
+        <button class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Theme">☀️</button>
+        <button class="logout-btn" onclick="doLogout()">🚪 Logout</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div id="panel-home" class="panel active">
+        <div class="page-header"><h1>Driver Dashboard 🧑‍✈️</h1></div>
+        <div id="driverStats" class="stats-row"></div>
+        <div class="card">
+          <div class="card-title">⚡ Quick Actions</div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <button class="btn btn-accent" onclick="showPanel('requests',null);document.querySelectorAll('.nav-item')[1].classList.add('active')">📡 View Pending Requests</button>
+            <button class="btn btn-green" onclick="showPanel('active',null);document.querySelectorAll('.nav-item')[2].classList.add('active')">🚗 View Active Trips</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">📋 Recent Trips</div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>ID</th><th>Customer</th><th>Pickup</th><th>Drop</th><th>Hours</th><th>KM</th><th>Earnings</th><th>Status</th></tr></thead>
+            <tbody id="recentTripsBody"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <div id="panel-requests" class="panel">
+        <div class="page-header"><h1>📡 Pending Requests</h1></div>
+        <div id="pendingList"></div>
+      </div>
+
+      <div id="panel-active" class="panel">
+        <div class="page-header"><h1>🚗 Active Trips</h1></div>
+        <div id="activeList"></div>
+      </div>
+
+      <div id="panel-history" class="panel">
+        <div class="page-header"><h1>📋 Trip History</h1></div>
+        <div class="card">
+          <div class="table-wrap"><table>
+            <thead><tr><th>ID</th><th>Customer</th><th>Vehicle</th><th>Date</th><th>Hours</th><th>KM</th><th>Earned</th><th>Rating</th><th>Status</th></tr></thead>
+            <tbody id="historyBody"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <div id="panel-earnings" class="panel">
+        <div class="page-header"><h1>💰 Earnings</h1></div>
+        <div id="earningsStats" class="stats-row"></div>
+        <div class="card">
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px;font-size:13px;color:var(--text2);font-weight:500">
+            💡 <strong style="color:var(--text)">Your Pay Rate:</strong> ₹50 per hour + ₹8 per km for every completed trip
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+let currentDriver = null;
+
+function toggleTheme() {
+  const curr = document.documentElement.getAttribute('data-theme');
+  const next = curr === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('ridex-theme', next);
+  document.querySelectorAll('.theme-toggle-btn').forEach(btn=>btn.textContent=next==='dark'?'☀️':'🌙');
+}
+
+function fmtRentalDisplayId(id) { return '#R' + String(id).padStart(3,'0'); }
+function fmtRequestDisplayId(id) { return '#DR' + String(id).padStart(3,'0'); }
+
+function switchTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach((t,i)=>t.classList.toggle('active',(tab==='login'?0:1)===i));
+  document.getElementById('loginForm').style.display=tab==='login'?'block':'none';
+  document.getElementById('registerForm').style.display=tab==='register'?'block':'none';
+}
+
+async function doLogin() {
+  try {
+    const driver = await apiPost('/drivers/login', {
+      username: document.getElementById('loginUsername').value,
+      password: document.getElementById('loginPassword').value
+    });
+    currentDriver = driver;
+    saveSession('driver', driver);
+    initDashboard();
+  } catch(e) { showToast(e.message,'error'); }
+}
+
+async function doRegister() {
+  try {
+    await apiPost('/drivers/register', {
+      name: document.getElementById('regName').value,
+      username: document.getElementById('regUsername').value,
+      password: document.getElementById('regPassword').value,
+      phone: document.getElementById('regPhone').value,
+      licenseNumber: document.getElementById('regLicense').value
+    });
+    showToast('Registered successfully! Please login.','success');
+    switchTab('login');
+  } catch(e) { showToast(e.message,'error'); }
+}
+
+function doLogout() {
+  clearSession(); currentDriver=null;
+  document.getElementById('dashboard').style.display='none';
+  document.getElementById('authScreen').style.display='flex';
+}
+
+function initDashboard() {
+  document.getElementById('authScreen').style.display='none';
+  document.getElementById('dashboard').style.display='block';
+  document.getElementById('sidebarName').textContent = currentDriver.name;
+  const theme = localStorage.getItem('ridex-theme')||'dark';
+  document.querySelectorAll('.theme-toggle-btn').forEach(btn=>btn.textContent=theme==='dark'?'☀️':'🌙');
+  loadHome();
+}
+
+function showPanel(name, el) {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  if(el) el.classList.add('active');
+  const loaders = { requests:loadRequests, active:loadActiveTrips, history:loadHistory, earnings:loadEarnings };
+  if(loaders[name]) loaders[name]();
+}
+
+async function loadHome() {
+  const trips = await apiGet('/rentals/driver/'+currentDriver.id).catch(()=>[]);
+  const completed = trips.filter(r=>r.status==='COMPLETED');
+  const totalHours = completed.reduce((s,r)=>s+(r.hours||0),0);
+  const totalKm = completed.reduce((s,r)=>s+(r.distance||0),0);
+  const earnings = completed.reduce((s,r)=>s+((r.hours||0)*50+(r.distance||0)*8),0);
+  document.getElementById('driverStats').innerHTML = `
+    <div class="stat-card accent"><div class="stat-label">Rating</div><div class="stat-val">${(currentDriver.rating||0).toFixed(1)}⭐</div><div class="stat-sub">${currentDriver.totalRatings||0} ratings</div></div>
+    <div class="stat-card green"><div class="stat-label">Total Trips</div><div class="stat-val">${completed.length}</div></div>
+    <div class="stat-card"><div class="stat-label">Hours Driven</div><div class="stat-val">${totalHours}</div></div>
+    <div class="stat-card yellow"><div class="stat-label">Total Earnings</div><div class="stat-val">${fmtCurrency(earnings)}</div></div>
+  `;
+  const tbody = document.getElementById('recentTripsBody');
+  const recent = trips.slice(-5).reverse();
+  const tripEarn = r => fmtCurrency((r.hours||0)*50+(r.distance||0)*8);
+  tbody.innerHTML = recent.length ? recent.map(r=>`
+    <tr>
+      <td>${fmtRentalDisplayId(r.id)}</td>
+      <td>${r.customer?.name||'—'}</td>
+      <td>${r.pickupLocation||'—'}</td>
+      <td>${r.dropLocation||'—'}</td>
+      <td>${r.hours||0}h</td>
+      <td>${r.distance||0}km</td>
+      <td style="color:var(--green);font-weight:700">${tripEarn(r)}</td>
+      <td>${statusBadge(r.status)}</td>
+    </tr>`).join('') : '<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text3)">No trips yet</td></tr>';
+}
+
+async function loadRequests() {
+  const reqs = await apiGet('/rentals/requests/driver/'+currentDriver.id).catch(()=>[]);
+  const div = document.getElementById('pendingList');
+  if(!reqs.length) { div.innerHTML='<div class="card"><div class="empty-state"><div class="empty-icon">📡</div><p>No pending requests right now</p></div></div>'; return; }
+  div.innerHTML = reqs.map(r=>`
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div class="card-title" style="margin:0">🚗 Request ${fmtRequestDisplayId(r.id)} — ${r.vehicle?.brand} ${r.vehicle?.model}</div>
+        ${statusBadge(r.status)}
+      </div>
+      <div class="form-grid">
+        <div><span style="color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:0.8px;font-weight:700">CUSTOMER</span><br><strong>${r.customer?.name||'—'}</strong></div>
+        <div><span style="color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:0.8px;font-weight:700">PICKUP</span><br><strong>${r.pickupLocation}</strong></div>
+        <div><span style="color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:0.8px;font-weight:700">DROP</span><br><strong>${r.dropLocation}</strong></div>
+        <div><span style="color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:0.8px;font-weight:700">DATE & TIME</span><br><strong>${fmtDate(r.pickupDate)} ${r.pickupTime||''}</strong></div>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:16px">
+        <button class="btn btn-green" onclick="respondRequest(${r.id},'ACCEPT')">✅ Accept</button>
+        <button class="btn btn-red" onclick="respondRequest(${r.id},'REJECT')">❌ Reject</button>
+      </div>
+    </div>`).join('');
+}
+
+async function respondRequest(requestId, action) {
+  try {
+    await apiPost('/rentals/requests/'+requestId+'/respond', { driverId:currentDriver.id, action });
+    showToast(action==='ACCEPT'?'✅ Trip accepted! Check Active Trips.':'Request rejected.', action==='ACCEPT'?'success':'info');
+    loadRequests();
+    if(action==='ACCEPT') loadHome();
+  } catch(e) { showToast(e.message,'error'); }
+}
+
+async function loadActiveTrips() {
+  const trips = await apiGet('/rentals/driver/'+currentDriver.id+'/active').catch(()=>[]);
+  const div = document.getElementById('activeList');
+  if(!trips.length) { div.innerHTML='<div class="card"><div class="empty-state"><div class="empty-icon">🚗</div><p>No active trips right now</p></div></div>'; return; }
+  div.innerHTML = trips.map(r=>`
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div class="card-title" style="margin:0">🚗 Trip ${fmtRentalDisplayId(r.id)} — ${r.vehicle?.brand} ${r.vehicle?.model}</div>
+        ${statusBadge(r.status)}
+      </div>
+      <div class="form-grid">
+        <div><span style="color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:0.8px;font-weight:700">CUSTOMER</span><br><strong>${r.customer?.name||'—'}</strong></div>
+        <div><span style="color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:0.8px;font-weight:700">PICKUP</span><br><strong>${r.pickupLocation||'—'}</strong></div>
+        <div><span style="color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:0.8px;font-weight:700">DROP</span><br><strong>${r.dropLocation||'TBD'}</strong></div>
+        <div><span style="color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:0.8px;font-weight:700">PICKUP TIME</span><br><strong>${r.pickupTime||'—'}</strong></div>
+      </div>
+      <div class="divider"></div>
+      ${r.status==='ACCEPTED'?`
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:16px;font-size:13px;color:var(--text2);font-weight:500">
+          ⚠️ Click "Start Trip" when you have picked up the customer.
+        </div>
+        <button class="btn btn-green" onclick="startTrip(${r.id})">▶️ Start Trip</button>
+      `:r.status==='ONGOING'?`
+        <div class="form-grid" style="margin-bottom:16px">
+          <div class="form-group"><label>Distance Traveled (km)</label><input type="number" id="km-${r.id}" min="0" placeholder="e.g. 25"></div>
+          <div class="form-group"><label>Final Drop Location</label><input type="text" id="drop-${r.id}" value="${r.dropLocation||''}"></div>
+          <div class="form-group"><label>Any Vehicle Damage?</label>
+            <select id="dmg-${r.id}"><option value="false">No Damage</option><option value="true">Yes — +₹2000</option></select>
+          </div>
+        </div>
+        <button class="btn btn-accent" onclick="completeTrip(${r.id})">🏁 Complete Trip</button>
+      `:''}`).join('');
+}
+
+async function startTrip(rentalId) {
+  try {
+    await apiPost('/rentals/'+rentalId+'/start', { driverId:currentDriver.id });
+    showToast('🚗 Trip started! Drive safe.','success');
+    loadActiveTrips();
+  } catch(e) { showToast(e.message,'error'); }
+}
+
+async function completeTrip(rentalId) {
+  const km = parseFloat(document.getElementById('km-'+rentalId).value)||0;
+  const drop = document.getElementById('drop-'+rentalId).value;
+  const damage = document.getElementById('dmg-'+rentalId).value==='true';
+  if(!km) return showToast('Please enter the distance traveled','error');
+  try {
+    const rental = await apiPost('/rentals/'+rentalId+'/complete', { driverId:currentDriver.id, distance:km, dropLocation:drop, damage });
+    const hrs = rental.hours||0;
+    const earned = hrs*50+km*8;
+    showToast(`🏁 Trip completed! Your earnings: ${fmtCurrency(earned)}`,'success');
+    const freshDriver = await apiGet('/drivers/'+currentDriver.id).catch(()=>null);
+    if(freshDriver) { currentDriver=freshDriver; saveSession('driver',freshDriver); }
+    loadActiveTrips(); loadHome(); loadHistory();
+  } catch(e) { showToast(e.message,'error'); }
+}
+
+async function loadHistory() {
+  const trips = await apiGet('/rentals/driver/'+currentDriver.id).catch(()=>[]);
+  const done = trips.filter(r=>r.status==='COMPLETED'||r.status==='CANCELLED');
+  const tbody = document.getElementById('historyBody');
+  const tripEarn = r => r.status==='COMPLETED' ? fmtCurrency((r.hours||0)*50+(r.distance||0)*8) : '—';
+  tbody.innerHTML = done.length ? done.reverse().map(r=>`
+    <tr>
+      <td>${fmtRentalDisplayId(r.id)}</td>
+      <td>${r.customer?.name||'—'}</td>
+      <td>${r.vehicle?.brand} ${r.vehicle?.model}</td>
+      <td>${fmtDate(r.rentDate)}</td>
+      <td>${r.hours||0}h</td>
+      <td>${r.distance||0}km</td>
+      <td style="color:var(--green);font-weight:700">${tripEarn(r)}</td>
+      <td>${r.customerRating?'⭐'.repeat(r.customerRating)+' ('+r.customerRating+')':'—'}</td>
+      <td>${statusBadge(r.status)}</td>
+    </tr>`).join('') : '<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--text3)">No trip history yet</td></tr>';
+}
+
+async function loadEarnings() {
+  const trips = await apiGet('/rentals/driver/'+currentDriver.id).catch(()=>[]);
+  const completed = trips.filter(r=>r.status==='COMPLETED');
+  const totalHours = completed.reduce((s,r)=>s+(r.hours||0),0);
+  const totalKm = completed.reduce((s,r)=>s+(r.distance||0),0);
+  const earnings = completed.reduce((s,r)=>s+((r.hours||0)*50+(r.distance||0)*8),0);
+  document.getElementById('earningsStats').innerHTML = `
+    <div class="stat-card green"><div class="stat-label">Total Earnings</div><div class="stat-val">${fmtCurrency(earnings)}</div></div>
+    <div class="stat-card accent"><div class="stat-label">Total Trips</div><div class="stat-val">${completed.length}</div></div>
+    <div class="stat-card"><div class="stat-label">Hours Driven</div><div class="stat-val">${totalHours}</div><div class="stat-sub">@ ₹50/hr</div></div>
+    <div class="stat-card yellow"><div class="stat-label">KM Covered</div><div class="stat-val">${totalKm}</div><div class="stat-sub">@ ₹8/km</div></div>
+    <div class="stat-card"><div class="stat-label">Avg per Trip</div><div class="stat-val">${fmtCurrency(completed.length?earnings/completed.length:0)}</div></div>
+    <div class="stat-card accent"><div class="stat-label">Rating</div><div class="stat-val">${(currentDriver.rating||0).toFixed(2)}⭐</div><div class="stat-sub">${currentDriver.totalRatings||0} reviews</div></div>
+  `;
+}
+
+window.addEventListener('load', () => {
+  const saved = getSession();
+  if(saved && localStorage.getItem('ridex_role')==='driver') { currentDriver=saved; initDashboard(); }
+  const theme = localStorage.getItem('ridex-theme')||'dark';
+  document.querySelectorAll('.theme-toggle-btn').forEach(btn=>btn.textContent=theme==='dark'?'☀️':'🌙');
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RideX — Smart Vehicle Rental Platform</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="landing-bg">
+    <div class="grid-lines"></div>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <nav class="nav">
+    <div class="logo-wrap">
+      <!-- RideX SVG Logo -->
+      <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="36" height="36" rx="10" fill="#1849A9"/>
+        <rect x="7" y="17" width="22" height="8" rx="2" fill="white"/>
+        <path d="M10 17 L12 10 H24 L26 17 Z" fill="white"/>
+        <path d="M12 15 L13.5 11 H22.5 L24 15 Z" fill="#1849A9"/>
+        <circle cx="12" cy="25" r="3.5" fill="#1849A9"/>
+        <circle cx="12" cy="25" r="1.8" fill="white"/>
+        <circle cx="24" cy="25" r="3.5" fill="#1849A9"/>
+        <circle cx="24" cy="25" r="1.8" fill="white"/>
+        <line x1="7" y1="20" x2="3" y2="20" stroke="#93C5FD" stroke-width="2" stroke-linecap="round"/>
+        <line x1="7" y1="17.5" x2="4" y2="17.5" stroke="#93C5FD" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="7" y1="22.5" x2="4" y2="22.5" stroke="#93C5FD" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <div class="logo-text">Ride<span>X</span></div>
+    </div>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#access">Get Started</a>
+      <button onclick="toggleTheme()" class="theme-toggle-btn" style="background:var(--surface);border:1px solid var(--border);color:var(--text2);padding:8px 14px;border-radius:8px;font-size:13px;cursor:pointer">🌙</button>
+      <a href="pages/admin.html" class="btn-nav">Admin →</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-left">
+      <div class="hero-eyebrow">⚡ Smart Vehicle Rental Platform</div>
+      <h1>
+        The Smarter<br>
+        Way to <em>Ride</em><br>
+        <span class="outline">Anywhere.</span>
+      </h1>
+      <p class="hero-desc">RideX connects customers, professional drivers, and fleet managers on one powerful platform. Book, track, and manage rentals — all in one place.</p>
+      <div class="hero-cta">
+        <a href="#access" class="btn-primary">🚗 Start Renting</a>
+        <a href="pages/admin.html" class="btn-ghost">Admin Panel →</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="features" class="features-section">
+    <div class="sec-label">Platform Features</div>
+    <h2 class="sec-title">Everything you need to<br>manage rentals at scale</h2>
+    <div class="features-grid">
+      <div class="fc"><div class="fc-icon">🔑</div><div class="fc-title">Self Drive</div><div class="fc-desc">Pick any vehicle, pay upfront, drive yourself. Late fees and damage handling included.</div></div>
+      <div class="fc"><div class="fc-icon">🧑‍✈️</div><div class="fc-title">Hire a Driver</div><div class="fc-desc">Request a professional driver. Real-time accept/reject flow, pay after completion.</div></div>
+      <div class="fc"><div class="fc-icon">🧾</div><div class="fc-title">Smart Invoicing</div><div class="fc-desc">Auto-generated receipts with GST, loyalty discounts, and downloadable HTML invoice.</div></div>
+      <div class="fc"><div class="fc-icon">💎</div><div class="fc-title">Loyalty Points</div><div class="fc-desc">Earn 10 points per trip. Redeem for discounts. Build customer loyalty effortlessly.</div></div>
+      <div class="fc"><div class="fc-icon">📊</div><div class="fc-title">Revenue Dashboard</div><div class="fc-desc">Date-range revenue reports, analytics, and fleet utilization at a glance.</div></div>
+      <div class="fc"><div class="fc-icon">🛡️</div><div class="fc-title">Cancellation Policy</div><div class="fc-desc">Free within 2 min. Tiered fees beyond. Protects drivers and keeps operations fair.</div></div>
+      <div class="fc"><div class="fc-icon">⭐</div><div class="fc-title">Driver Ratings</div><div class="fc-desc">Rate drivers after every trip. Running average ensures quality stays high.</div></div>
+      <div class="fc"><div class="fc-icon">🗄️</div><div class="fc-title">SQLite Backend</div><div class="fc-desc">Zero-config database. Spring Boot + JPA. Auto-seeds sample data on startup.</div></div>
+    </div>
+  </section>
+
+  <section id="access" class="role-section">
+    <div class="sec-label">Get Started</div>
+    <h2 class="sec-title">Choose your access portal</h2>
+    <div class="role-grid">
+      <a href="pages/customer.html" class="role-card customer">
+        <div class="rc-icon">👤</div>
+        <div class="rc-title">Customer Portal</div>
+        <div class="rc-desc">Book vehicles, hire drivers, track trips, and manage your rental history.</div>
+        <div class="rc-features">
+          <div class="rc-feature">Browse & book vehicles</div>
+          <div class="rc-feature">Self-drive or with driver</div>
+          <div class="rc-feature">Invoice download</div>
+          <div class="rc-feature">Loyalty points rewards</div>
+        </div>
+        <div class="rc-cta">Enter Portal →</div>
+      </a>
+      <a href="pages/driver.html" class="role-card driver">
+        <div class="rc-icon">🧑‍✈️</div>
+        <div class="rc-title">Driver Portal</div>
+        <div class="rc-desc">Accept trip requests, manage your schedule, and track your earnings.</div>
+        <div class="rc-features">
+          <div class="rc-feature">Accept / reject requests</div>
+          <div class="rc-feature">Start & complete trips</div>
+          <div class="rc-feature">Earnings analytics</div>
+          <div class="rc-feature">Performance ratings</div>
+        </div>
+        <div class="rc-cta">Enter Portal →</div>
+      </a>
+      <a href="pages/admin.html" class="role-card admin">
+        <div class="rc-icon">🏢</div>
+        <div class="rc-title">Admin Panel</div>
+        <div class="rc-desc">Full platform control — manage fleet, users, and view revenue reports.</div>
+        <div class="rc-features">
+          <div class="rc-feature">Fleet management (CRUD)</div>
+          <div class="rc-feature">All rentals & requests</div>
+          <div class="rc-feature">Revenue dashboard</div>
+          <div class="rc-feature">Customer & driver overview</div>
+        </div>
+        <div class="rc-cta">Enter Panel →</div>
+      </a>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-logo">Ride<span>X</span></div>
+    <span>Built with Spring Boot + SQLite + REST API</span>
+    <span>© 2025 RideX Platform</span>
+  </footer>
+</div>
+<script src="js/api.js"></script>
+<script>fetch(API_BASE + '/admin/seed', { method: 'POST' }).catch(() => {});</script>
+</body>
+</html>

@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Customer Portal — RideX</title>
+<link rel="stylesheet" href="../css/style.css">
+<script>
+  (function() {
+    const savedTheme = localStorage.getItem('ridex-theme');
+    if (savedTheme === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+    } else {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+  })();
+</script>
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div id="authScreen" class="auth-page">
+  <div class="auth-bg">
+    <div class="grid-lines"></div>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+  </div>
+  <div class="auth-card">
+    <a href="../index.html" class="back-link">← Back to Home</a>
+    <div class="logo">Ride<em>X</em></div>
+    <div class="auth-subtitle">Customer Portal</div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchTab('login')">Login</button>
+      <button class="auth-tab" onclick="switchTab('register')">Register</button>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <div id="loginForm">
+      <div class="form-group" style="margin-bottom:14px">
+        <label>Username</label>
+        <input type="text" id="loginUsername" placeholder="Enter username">
+      </div>
+      <div class="form-group" style="margin-bottom:22px">
+        <label>Password</label>
+        <input type="password" id="loginPassword" placeholder="Enter password">
+      </div>
+      <button class="btn btn-accent btn-full" onclick="doLogin()">🔑 Login</button>
+
+    </div>
+
+    <!-- REGISTER FORM -->
+    <div id="registerForm" style="display:none">
+      <div class="form-grid" style="grid-template-columns:1fr 1fr">
+        <div class="form-group"><label>Full Name</label><input type="text" id="regName" placeholder="Your full name"></div>
+        <div class="form-group"><label>Username</label><input type="text" id="regUsername" placeholder="Choose username"></div>
+        <div class="form-group"><label>Password</label><input type="password" id="regPassword" placeholder="Password"></div>
+        <div class="form-group"><label>Phone</label><input type="text" id="regPhone" placeholder="10-digit number"></div>
+        <div class="form-group" style="grid-column:1/-1"><label>Address</label><input type="text" id="regAddress" placeholder="Your city / address"></div>
+      </div>
+      <button class="btn btn-accent btn-full" onclick="doRegister()" style="margin-top:8px">✅ Create Account</button>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" style="display:none">
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-logo">Ride<em>X</em></div>
+      <div class="sidebar-user">Customer Portal<strong id="sidebarName">—</strong></div>
+      <nav class="sidebar-nav">
+        <div class="nav-item active" onclick="showPanel('home',this)"><span class="nav-icon">🏠</span> Dashboard</div>
+        <div class="nav-item" onclick="showPanel('browse',this)"><span class="nav-icon">🚗</span> Browse & Rent</div>
+        <div class="nav-item" onclick="showPanel('my-rentals',this)"><span class="nav-icon">📋</span> My Rentals</div>
+        <div class="nav-item" onclick="showPanel('driver-requests',this)"><span class="nav-icon">📡</span> My Driver Requests</div>
+        <div class="nav-item" onclick="showPanel('pay',this)"><span class="nav-icon">💳</span> Pay & Complete</div>
+        <div class="nav-item" onclick="showPanel('return',this)"><span class="nav-icon">↩️</span> Return Vehicle</div>
+      </nav>
+      <div class="sidebar-bottom">
+        <button class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Theme">☀️</button>
+        <button class="logout-btn" onclick="doLogout()">🚪 Logout</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <!-- HOME -->
+      <div id="panel-home" class="panel active">
+        <div class="page-header"><h1>Welcome back 👋</h1></div>
+        <div id="homeStats" class="stats-row"></div>
+        <div class="card">
+          <div class="card-title">🚗 Recent Rentals</div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>ID</th><th>Vehicle</th><th>Type</th><th>Date</th><th>Amount</th><th>Status</th><th>Invoice</th></tr></thead>
+            <tbody id="recentRentals"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- BROWSE & RENT -->
+      <div id="panel-browse" class="panel">
+        <div class="page-header"><h1>🚗 Browse & Rent Vehicles</h1></div>
+        <div class="card">
+          <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;align-items:center">
+            <select id="filterType" style="padding:9px 14px;background:var(--bg2);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--font-body);font-size:14px;font-weight:600" onchange="loadBrowse()">
+              <option value="">All Types</option>
+              <option value="Car">🚗 Cars</option>
+              <option value="Bike">🛵 Bikes</option>
+            </select>
+            <select id="filterAvail" style="padding:9px 14px;background:var(--bg2);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--font-body);font-size:14px;font-weight:600" onchange="loadBrowse()">
+              <option value="">All Status</option>
+              <option value="available">✅ Available Only</option>
+            </select>
+            <span style="font-size:13px;color:var(--text3);font-weight:600">Click an available vehicle to rent it</span>
+          </div>
+          <div id="browseGrid" class="vehicle-grid"></div>
+        </div>
+      </div>
+
+      <!-- MY RENTALS -->
+      <div id="panel-my-rentals" class="panel">
+        <div class="page-header"><h1>📋 My Rentals</h1></div>
+        <div class="card">
+          <div class="table-wrap"><table>
+            <thead><tr><th>ID</th><th>Vehicle</th><th>Type</th><th>Date</th><th>Duration</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="myRentalsBody"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- MY DRIVER REQUESTS -->
+      <div id="panel-driver-requests" class="panel">
+        <div class="page-header"><h1>📡 My Driver Requests</h1></div>
+        <div class="card">
+          <div class="table-wrap"><table>
+            <thead><tr><th>ID</th><th>Driver</th><th>Vehicle</th><th>Pickup</th><th>Drop</th><th>Date</th><th>Status</th></tr></thead>
+            <tbody id="requestsBody"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- PAY -->
+      <div id="panel-pay" class="panel">
+        <div class="page-header"><h1>💳 Pay & Complete</h1></div>
+        <div id="payList"></div>
+      </div>
+
+      <!-- RETURN -->
+      <div id="panel-return" class="panel">
+        <div class="page-header"><h1>↩️ Return Vehicle</h1></div>
+        <div id="returnList"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- RENT OPTION MODAL -->
+<div id="rentOptionModal" style="display:none" class="modal-overlay" onclick="if(event.target===this)closeRentModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="rentModalTitle">🚗 Rent Vehicle</h3>
+      <button class="modal-close" onclick="closeRentModal()">×</button>
+    </div>
+    <div id="rentModalVehicleInfo" style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:24px"></div>
+    <p style="color:var(--text2);font-size:14px;margin-bottom:16px;font-weight:500">How would you like to rent this vehicle?</p>
+    <div class="rent-option-grid">
+      <div class="rent-option" onclick="openSelfDriveForm()">
+        <div class="ro-icon">🔑</div>
+        <strong>Self Drive</strong>
+        <span>Drive yourself, pay per day</span>
+      </div>
+      <div class="rent-option" onclick="openWithDriverForm()">
+        <div class="ro-icon">🧑‍✈️</div>
+        <strong>With Driver</strong>
+        <span>₹100/hr + ₹15/km</span>
+      </div>
+    </div>
+
+    <!-- SELF DRIVE FORM -->
+    <div id="selfDriveModalForm" style="display:none;margin-top:20px">
+      <div class="divider"></div>
+      <div class="card-title" style="font-size:16px">🔑 Self Drive Details</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Number of Days</label>
+          <input type="number" id="sdDays" min="1" value="1" onchange="calcSelfDrive()">
+        </div>
+        <div class="form-group">
+          <label>Loyalty Points (you have <span id="sdPoints">0</span>)</label>
+          <input type="number" id="sdLoyalty" min="0" value="0" onchange="calcSelfDrive()">
+        </div>
+        <div class="form-group">
+          <label>Payment Mode</label>
+          <select id="sdPayment"><option>Cash</option><option>Card</option><option>UPI</option><option>Wallet</option></select>
+        </div>
+      </div>
+      <div id="sdInvoice" class="invoice" style="margin-bottom:20px;display:none"></div>
+      <button class="btn btn-accent btn-full" onclick="bookSelfDrive()">🔑 Confirm Self Drive Booking</button>
+    </div>
+
+    <!-- WITH DRIVER FORM -->
+    <div id="withDriverModalForm" style="display:none;margin-top:20px">
+      <div class="divider"></div>
+      <div class="card-title" style="font-size:16px">🧑‍✈️ Driver Booking Details</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Pickup Location</label><input type="text" id="bdPickup" placeholder="e.g. Chennai Airport"></div>
+        <div class="form-group"><label>Drop Location</label><input type="text" id="bdDrop" placeholder="e.g. T Nagar"></div>
+        <div class="form-group"><label>Pickup Date</label><input type="date" id="bdDate"></div>
+        <div class="form-group"><label>Pickup Time</label><input type="time" id="bdTime"></div>
+      </div>
+      <div class="form-group" style="margin-bottom:20px">
+        <label>Select Driver</label>
+        <select id="bdDriver"><option value="">Loading drivers...</option></select>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:20px;font-size:13px;color:var(--text2);font-weight:500">
+        💡 Pricing: ₹100/hour + ₹15/km. Payment collected after trip completion.
+      </div>
+      <button class="btn btn-accent btn-full" onclick="bookWithDriver()">📡 Send Request to Driver</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+let currentUser = null;
+let selectedVehicle = null;
+
+// ===== THEME =====
+function toggleTheme() {
+  const curr = document.documentElement.getAttribute('data-theme');
+  const next = curr === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('ridex-theme', next);
+  document.querySelectorAll('.theme-toggle-btn').forEach(btn => btn.textContent = next === 'dark' ? '☀️' : '🌙');
+}
+
+// ===== AUTH =====
+function switchTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach((t,i)=>t.classList.toggle('active',(tab==='login'?0:1)===i));
+  document.getElementById('loginForm').style.display=tab==='login'?'block':'none';
+  document.getElementById('registerForm').style.display=tab==='register'?'block':'none';
+}
+
+async function doLogin() {
+  try {
+    const user = await apiPost('/customers/login', {
+      username: document.getElementById('loginUsername').value,
+      password: document.getElementById('loginPassword').value
+    });
+    currentUser = user;
+    saveSession('customer', user);
+    initDashboard();
+  } catch(e) { showToast(e.message,'error'); }
+}
+
+async function doRegister() {
+  try {
+    await apiPost('/customers/register', {
+      name: document.getElementById('regName').value,
+      username: document.getElementById('regUsername').value,
+      password: document.getElementById('regPassword').value,
+      phone: document.getElementById('regPhone').value,
+      address: document.getElementById('regAddress').value
+    });
+    showToast('Account created! Please login.','success');
+    switchTab('login');
+  } catch(e) { showToast(e.message,'error'); }
+}
+
+function doLogout() {
+  clearSession(); currentUser=null;
+  document.getElementById('dashboard').style.display='none';
+  document.getElementById('authScreen').style.display='flex';
+}
+
+function initDashboard() {
+  document.getElementById('authScreen').style.display='none';
+  document.getElementById('dashboard').style.display='block';
+  document.getElementById('sidebarName').textContent = currentUser.name;
+  const theme = localStorage.getItem('ridex-theme')||'dark';
+  document.querySelectorAll('.theme-toggle-btn').forEach(btn=>btn.textContent=theme==='dark'?'☀️':'🌙');
+  loadHome();
+}
+
+function showPanel(name, el) {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  if(el) el.classList.add('active');
+  const loaders = {
+    'browse': loadBrowse, 'my-rentals': loadMyRentals,
+    'driver-requests': loadMyRequests, 'pay': loadPayPanel, 'return': loadReturnPanel
+  };
+  if(loaders[name]) loaders[name]();
+}
+
+// ===== ID FORMATTERS =====
+function fmtRentalDisplayId(id) { return '#R' + String(id).padStart(3,'0'); }
+function fmtRequestDisplayId(id) { return '#DR' + String(id).padStart(3,'0'); }
+
+// ===== HOME =====
+async function loadHome() {
+  const rentals = await apiGet('/rentals/customer/'+currentUser.id).catch(()=>[]);
+  const active = rentals.filter(r=>['ACTIVE','ACCEPTED','ONGOING'].includes(r.status)).length;
+  const completed = rentals.filter(r=>r.status==='COMPLETED').length;
+  const totalSpent = rentals.filter(r=>r.status==='COMPLETED').reduce((s,r)=>s+(r.rentAmount||0),0);
+
+  document.getElementById('homeStats').innerHTML = `
+    <div class="stat-card accent"><div class="stat-label">Loyalty Points</div><div class="stat-val">${currentUser.loyaltyPoints}</div></div>
+    <div class="stat-card green"><div class="stat-label">Active Rental</div><div class="stat-val">${active}</div></div>
+    <div class="stat-card"><div class="stat-label">Trips Done</div><div class="stat-val">${completed}</div></div>
+    <div class="stat-card yellow"><div class="stat-label">Total Spent</div><div class="stat-val">${fmtCurrency(totalSpent)}</div></div>
+  `;
+  const tbody = document.getElementById('recentRentals');
+  const recent = rentals.slice(-5).reverse();
+  tbody.innerHTML = recent.length ? recent.map(r=>`
+    <tr>
+      <td>${fmtRentalDisplayId(r.id)}</td>
+      <td>${r.vehicle.brand} ${r.vehicle.model}</td>
+      <td>${r.rentalType==='SELF_DRIVE'?'🔑 Self':'🧑‍✈️ Driver'}</td>
+      <td>${fmtDate(r.rentDate)}</td>
+      <td>${fmtCurrency(r.rentAmount)}</td>
+      <td>${statusBadge(r.status)}</td>
+      <td>${r.status==='COMPLETED'?`<button class="btn btn-sm btn-outline" onclick="downloadInvoiceById(${r.id})">📄 Invoice</button>`:'—'}</td>
+    </tr>`).join('') : '<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:30px">No rentals yet — browse vehicles to get started!</td></tr>';
+}
+
+// ===== BROWSE =====
+async function loadBrowse() {
+  const vehicles = await apiGet('/vehicles').catch(()=>[]);
+  const filterType = document.getElementById('filterType').value;
+  const filterAvail = document.getElementById('filterAvail').value;
+  let filtered = vehicles.filter(v=>(!filterType||v.type===filterType)&&(!filterAvail||v.available));
+  const grid = document.getElementById('browseGrid');
+  grid.innerHTML = '';
+  if(!filtered.length) {
+    grid.innerHTML='<div class="empty-state"><div class="empty-icon">🚫</div><p>No vehicles match your filter</p></div>';
+    return;
+  }
+  filtered.forEach(v => {
+    const card = buildVehicleCard(v, null, v.available ? (vehicle) => openRentModal(vehicle) : null);
+    if (!v.available) card.style.opacity = '0.5';
+    grid.appendChild(card);
+  });
+}
+
+// ===== RENT MODAL =====
+function openRentModal(vehicle) {
+  selectedVehicle = vehicle;
+  document.getElementById('rentModalTitle').textContent = `🚗 Rent — ${vehicle.brand} ${vehicle.model}`;
+  document.getElementById('rentModalVehicleInfo').innerHTML = `
+    <div style="display:flex;align-items:center;gap:16px">
+      <span style="font-size:42px">${vehicleEmoji(vehicle.type, vehicle.category)}</span>
+      <div>
+        <div style="font-family:var(--font-head);font-size:18px;font-weight:700">${vehicle.brand} ${vehicle.model}</div>
+        <div style="color:var(--text3);font-size:13px;font-weight:600">${vehicle.type} · ${vehicle.category} · ${vehicle.regNo}</div>
+        <div style="color:var(--accent2);font-family:var(--font-head);font-size:20px;font-weight:900;margin-top:4px">${fmtCurrency(vehicle.rentPerDay)}<span style="font-size:13px;font-weight:400;color:var(--text3)">/day</span></div>
+      </div>
+    </div>
+  `;
+  document.getElementById('selfDriveModalForm').style.display='none';
+  document.getElementById('withDriverModalForm').style.display='none';
+  document.getElementById('rentOptionModal').style.display='flex';
+}
+
+function closeRentModal() {
+  document.getElementById('rentOptionModal').style.display='none';
+  selectedVehicle = null;
+}
+
+function openSelfDriveForm() {
+  document.getElementById('selfDriveModalForm').style.display='block';
+  document.getElementById('withDriverModalForm').style.display='none';
+  document.getElementById('sdPoints').textContent = currentUser.loyaltyPoints;
+  document.getElementById('sdLoyalty').max = currentUser.loyaltyPoints;
+  calcSelfDrive();
+}
+
+function openWithDriverForm() {
+  document.getElementById('withDriverModalForm').style.display='block';
+  document.getElementById('selfDriveModalForm').style.display='none';
+  loadAvailableDrivers();
+  const today = new Date().toISOString().split('T')[0];
+  const timeNow = new Date().toTimeString().slice(0,5);
+  document.getElementById('bdDate').value = today;
+  document.getElementById('bdTime').value = timeNow;
+}
+
+function calcSelfDrive() {
+  if(!selectedVehicle) return;
+  const days = parseInt(document.getElementById('sdDays').value)||1;
+  const pts = parseInt(document.getElementById('sdLoyalty').value)||0;
+  const subtotal = selectedVehicle.rentPerDay * days;
+  const discount = Math.min(pts, Math.floor(subtotal/10)) * 10;
+  const afterDiscount = subtotal - discount;
+  const gst = afterDiscount * 0.05;
+  const total = afterDiscount + gst;
+  const inv = document.getElementById('sdInvoice');
+  inv.style.display='block';
+  inv.innerHTML = `
+    <div class="invoice-row"><span>${days} day(s) × ${fmtCurrency(selectedVehicle.rentPerDay)}</span><span>${fmtCurrency(subtotal)}</span></div>
+    ${discount>0?`<div class="invoice-row" style="color:var(--green)"><span>Loyalty Discount</span><span>-${fmtCurrency(discount)}</span></div>`:''}
+    <div class="invoice-row"><span>GST (5%)</span><span>${fmtCurrency(gst)}</span></div>
+    <div class="invoice-row total"><span>Total Payable</span><span>${fmtCurrency(total)}</span></div>
+  `;
+}
+
+async function bookSelfDrive() {
+  if(!selectedVehicle) return showToast('No vehicle selected','error');
+  try {
+    const rental = await apiPost('/rentals/self-drive', {
+      customerId: currentUser.id,
+      vehicleId: selectedVehicle.id,
+      days: parseInt(document.getElementById('sdDays').value)||1,
+      loyaltyPointsToUse: parseInt(document.getElementById('sdLoyalty').value)||0,
+      paymentMode: document.getElementById('sdPayment').value
+    });
+    const freshUser = await apiGet('/customers/'+currentUser.id).catch(()=>null);
+    if(freshUser) { currentUser=freshUser; saveSession('customer',freshUser); }
+    closeRentModal();
+    showToast(`✅ Booked! Rental ${fmtRentalDisplayId(rental.id)} confirmed.`,'success');
+    loadHome();
+    showPanel('my-rentals', document.querySelector('.nav-item:nth-child(3)'));
+  } catch(e) { showToast(e.message,'error'); }
+}
+
+async function loadAvailableDrivers() {
+  const drivers = await apiGet('/drivers/available').catch(()=>[]);
+  const sel = document.getElementById('bdDriver');
+  sel.innerHTML = drivers.length
+    ? drivers.map(d=>`<option value="${d.id}">${d.name} — Rating: ${d.rating.toFixed(1)}⭐ (${d.phone})</option>`).join('')
+    : '<option value="">No drivers available</option>';
+}
+
+async function bookWithDriver() {
+  if(!selectedVehicle) return showToast('No vehicle selected','error');
+  const driverId = document.getElementById('bdDriver').value;
+  if(!driverId) return showToast('No driver available','error');
+  try {
+    const req = await apiPost('/rentals/with-driver/request', {
+      customerId: currentUser.id,
+      vehicleId: selectedVehicle.id,
+      driverId: parseInt(driverId),
+      pickupLocation: document.getElementById('bdPickup').value,
+      dropLocation: document.getElementById('bdDrop').value,
+      pickupDate: document.getElementById('bdDate').value,
+      pickupTime: document.getElementById('bdTime').value + ':00'
+    });
+    closeRentModal();
+    showToast(`📡 Request ${fmtRequestDisplayId(req.id)} sent! Waiting for driver.`,'success');
+    showPanel('driver-requests', document.querySelector('.nav-item:nth-child(4)'));
+  } catch(e) { showToast(e.message,'error'); }
+}
+
+// ===== MY RENTALS =====
+async function loadMyRentals() {
+  const rentals = await apiGet('/rentals/customer/'+currentUser.id).catch(()=>[]);
+  const tbody = document.getElementById('myRentalsBody');
+  if(!rentals.length) { tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text3)">No rentals found</td></tr>'; return; }
+  tbody.innerHTML = rentals.reverse().map(r=>`
+    <tr>
+      <td>${fmtRentalDisplayId(r.id)}</td>
+      <td>${r.vehicle.brand} ${r.vehicle.model}</td>
+      <td>${r.rentalType==='SELF_DRIVE'?'🔑 Self':'🧑‍✈️ Driver'}</td>
+      <td>${fmtDate(r.rentDate)}</td>
+      <td>${r.rentalType==='SELF_DRIVE'?(r.days||1)+' days':(r.hours||0)+' hrs'}</td>
+      <td>${fmtCurrency(r.rentAmount)}</td>
+      <td>${statusBadge(r.status)}</td>
+      <td style="display:flex;gap:6px;flex-wrap:wrap;padding:10px 14px">
+        ${(r.status==='ACCEPTED'||r.status==='ONGOING')&&r.rentalType==='WITH_DRIVER'?`<button class="btn btn-sm btn-red" onclick="cancelRental(${r.id})">Cancel</button>`:''}
+        ${r.status==='ACTIVE'&&r.rentalType==='SELF_DRIVE'?`<button class="btn btn-sm btn-red" onclick="cancelRental(${r.id})">Cancel</button>`:''}
+        ${r.status==='COMPLETED'?`<button class="btn btn-sm btn-outline" onclick="downloadInvoiceById(${r.id})">📄 Invoice</button>`:''}
+      </td>
+    </tr>`).join('');
+}
+
+async function cancelRental(id) {
+  if(!confirm('Cancel this rental?')) return;
+  try {
+    await apiPost('/rentals/'+id+'/cancel', { customerId:currentUser.id, paymentMode:'Cash' });
+    showToast('Rental cancelled','success');
+    loadMyRentals();
+  } catch(e) { showToast(e.message,'error'); }
+}
+
+// ===== INVOICE DOWNLOAD =====
+async function downloadInvoiceById(rentalId) {
+  try {
+    const rental = await apiGet('/rentals/'+rentalId).catch(()=>null);
+    if(!rental) return showToast('Could not fetch rental details','error');
+    generateAndDownloadInvoice(rental, currentUser, rental.paymentMode||'Cash', 0);
+  } catch(e) { showToast('Invoice error: '+e.message,'error'); }
+}
+
+function generateAndDownloadInvoice(rental, customer, paymentMode, pointsUsed) {
+  let baseAmount=0, distanceFare=0, timeFare=0, subtotal=0;
+  if(rental.rentalType==='WITH_DRIVER') {
+    baseAmount=100; distanceFare=(rental.distance||0)*15; timeFare=(rental.hours||1)*100;
+    subtotal=baseAmount+distanceFare+timeFare;
+  } else {
+    subtotal=(rental.vehicle?.rentPerDay||500)*(rental.days||1);
+  }
+  const discount=(pointsUsed||0)*10;
+  const afterDiscount=Math.max(0,subtotal-discount);
+  const gst=afterDiscount*0.05;
+  let total=afterDiscount+gst;
+  if(rental.damageFee>0) total+=rental.damageFee;
+  const invoiceId='RX-INV-'+String(rental.id).padStart(5,'0');
+  const txnId='TXN'+Date.now()+Math.floor(Math.random()*10000);
+  const now=new Date().toLocaleString('en-IN');
+  const fc=(n)=>'₹'+Number(n||0).toLocaleString('en-IN');
+
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>RideX Invoice ${invoiceId}</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;background:#f0f4ff;padding:40px;display:flex;justify-content:center}
+.inv{max-width:720px;width:100%;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(24,73,169,.12)}
+.inv-head{background:#1849A9;color:#fff;padding:28px 32px;display:flex;justify-content:space-between;align-items:center}
+.inv-logo{font-size:28px;font-weight:800;letter-spacing:-1px}.inv-logo span{color:#93C5FD}
+.inv-logo small{display:block;font-size:11px;opacity:.8;letter-spacing:2px;margin-top:2px}
+.inv-meta{text-align:right;font-size:13px;opacity:.9;line-height:1.8}.inv-meta strong{font-size:18px;display:block}
+.inv-body{padding:28px 32px}.sec{margin-bottom:20px}
+.sec-title{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#1849A9;border-bottom:2px solid #EFF6FF;padding-bottom:6px;margin-bottom:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px 24px}.field{font-size:13px}
+.field label{color:#64748B;display:block;font-size:11px;margin-bottom:2px}.field span{color:#1e293b;font-weight:500}
+.ftable{width:100%;border-collapse:collapse;font-size:14px}
+.ftable td{padding:8px 0;border-bottom:1px solid #F1F5F9;color:#475569}
+.ftable td:last-child{text-align:right;font-weight:500;color:#1e293b}
+.ftable tr.disc td{color:#16a34a}.ftable tr.dmg td{color:#dc2626}
+.ftable tr.tot td{border-top:2px solid #1849A9;border-bottom:none;padding-top:12px;font-weight:700;font-size:16px;color:#1849A9}
+.badge{display:inline-block;background:#EFF6FF;color:#1849A9;border:1px solid #BFDBFE;padding:4px 14px;border-radius:100px;font-size:12px;font-weight:700}
+.inv-foot{background:#F8FAFC;border-top:1px solid #E2E8F0;padding:20px 32px;text-align:center}
+.inv-foot p{font-size:12px;color:#94A3B8;line-height:1.8}
+.print-btn{margin-top:14px}.print-btn button{background:#1849A9;color:#fff;border:none;padding:10px 28px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer}
+.loy{background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+.loy span{font-size:13px;color:#1849A9}.loy strong{font-size:18px;color:#1849A9;font-weight:700}
+@media print{body{background:#fff;padding:0}.print-btn{display:none}.inv{box-shadow:none}}</style></head>
+<body><div class="inv">
+<div class="inv-head"><div class="inv-logo">Ride<span>X</span><small>VEHICLE RENTAL PLATFORM</small></div>
+<div class="inv-meta"><strong>${invoiceId}</strong>${now}<br>Txn: ${txnId}</div></div>
+<div class="inv-body">
+<div class="sec"><div class="sec-title">Customer Details</div><div class="grid2">
+<div class="field"><label>Name</label><span>${customer?.name||'—'}</span></div>
+<div class="field"><label>Customer ID</label><span>#${customer?.id||'—'}</span></div>
+<div class="field"><label>Phone</label><span>${customer?.phone||'—'}</span></div>
+<div class="field"><label>Address</label><span>${customer?.address||'—'}</span></div></div></div>
+<div class="sec"><div class="sec-title">Trip Details</div><div class="grid2">
+<div class="field"><label>Vehicle</label><span>${rental.vehicle?.brand||''} ${rental.vehicle?.model||''}</span></div>
+<div class="field"><label>Reg No.</label><span>${rental.vehicle?.regNo||'—'}</span></div>
+<div class="field"><label>Type</label><span>${rental.rentalType==='WITH_DRIVER'?'🧑‍✈️ With Driver':'🔑 Self Drive'}</span></div>
+<div class="field"><label>Date</label><span>${fmtDate(rental.rentDate)}</span></div>
+${rental.rentalType==='WITH_DRIVER'?`
+<div class="field"><label>Pickup</label><span>${rental.pickupLocation||'—'}</span></div>
+<div class="field"><label>Drop</label><span>${rental.dropLocation||'—'}</span></div>
+<div class="field"><label>Distance</label><span>${rental.distance||0} km</span></div>
+<div class="field"><label>Duration</label><span>${rental.hours||0} hr(s)</span></div>
+<div class="field"><label>Driver</label><span>${rental.driver?.name||'—'}</span></div>`:`
+<div class="field"><label>Days</label><span>${rental.days||1}</span></div>`}
+</div></div>
+<div class="sec"><div class="sec-title">Fare Breakdown</div><table class="ftable">
+${rental.rentalType==='WITH_DRIVER'?`
+<tr><td>Base Fare</td><td>${fc(baseAmount)}</td></tr>
+<tr><td>Distance (₹15/km × ${rental.distance||0}km)</td><td>${fc(distanceFare)}</td></tr>
+<tr><td>Time (₹100/hr × ${rental.hours||0}hrs)</td><td>${fc(timeFare)}</td></tr>`:`
+<tr><td>${fc(rental.vehicle?.rentPerDay||0)}/day × ${rental.days||1} days</td><td>${fc(subtotal)}</td></tr>`}
+${discount>0?`<tr class="disc"><td>Loyalty Discount (${pointsUsed} pts)</td><td>-${fc(discount)}</td></tr>`:''}
+${rental.damageFee>0?`<tr class="dmg"><td>Damage Fee</td><td>+${fc(rental.damageFee)}</td></tr>`:''}
+<tr><td>GST (5%)</td><td>${fc(gst)}</td></tr>
+<tr class="tot"><td>Total Paid</td><td>${fc(total)}</td></tr>
+</table></div>
+<div class="sec"><div class="sec-title">Payment</div>
+<div style="display:flex;justify-content:space-between;align-items:center">
+<div class="field"><label>Mode</label><span>${paymentMode||'Cash'}</span></div>
+<span class="badge">✓ PAID</span></div></div>
+<div class="sec"><div class="sec-title">Loyalty Points</div>
+<div class="loy"><span>Points earned this trip</span><strong>+10 pts</strong></div></div>
+</div>
+<div class="inv-foot"><p>Thank you for choosing <strong>RideX</strong> — Your trusted vehicle rental platform</p>
+<p>Support: support@ridex.in | www.ridex.in</p>
+<div class="print-btn"><button onclick="window.print()">🖨️ Print / Save as PDF</button></div></div>
+</div></body></html>`;
+
+  const blob=new Blob([html],{type:'text/html'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=`RideX_${invoiceId}.html`;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+  showToast(`✅ Invoice ${invoiceId} downloaded!`,'success');
+}
+
+// ===== MY DRIVER REQUESTS =====
+async function loadMyRequests() {
+  const reqs = await apiGet('/rentals/requests/customer/'+currentUser.id).catch(()=>[]);
+  const tbody = document.getElementById('requestsBody');
+  if(!reqs.length) { tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text3)">No driver requests yet</td></tr>'; return; }
+  tbody.innerHTML = reqs.reverse().map(r=>`
+    <tr>
+      <td>${fmtRequestDisplayId(r.id)}</td>
+      <td>${r.driver.name}</td>
+      <td>${r.vehicle.brand} ${r.vehicle.model}</td>
+      <td>${r.pickupLocation}</td>
+      <td>${r.dropLocation}</td>
+      <td>${fmtDate(r.pickupDate)}</td>
+      <td>${statusBadge(r.status)}</td>
+    </tr>`).join('');
+}
+
+// ===== PAY PANEL =====
+async function loadPayPanel() {
+  const rentals = await apiGet('/rentals/customer/'+currentUser.id).catch(()=>[]);
+  const pending = rentals.filter(r=>r.status==='COMPLETED'&&!r.paymentMode&&r.rentalType==='WITH_DRIVER');
+  const div = document.getElementById('payList');
+  if(!pending.length) {
+    div.innerHTML='<div class="card"><div class="empty-state"><div class="empty-icon">✅</div><p>No pending payments</p></div></div>';
+    return;
+  }
+  div.innerHTML = pending.map(r=>`
+    <div class="card">
+      <div class="card-title">🧾 Rental ${fmtRentalDisplayId(r.id)} — ${r.vehicle.brand} ${r.vehicle.model}</div>
+      <div class="form-grid">
+        <div><span style="color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:0.8px;font-weight:700">DRIVER</span><br><strong>${r.driver?.name||'—'}</strong></div>
+        <div><span style="color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:0.8px;font-weight:700">DISTANCE</span><br><strong>${r.distance||0} km</strong></div>
+        <div><span style="color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:0.8px;font-weight:700">HOURS</span><br><strong>${r.hours||0} hrs</strong></div>
+        <div><span style="color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:0.8px;font-weight:700">AMOUNT</span><br><strong style="color:var(--accent2);font-family:var(--font-head);font-size:20px">${fmtCurrency(r.originalRentAmount||r.rentAmount)}</strong></div>
+      </div>
+      <div class="divider"></div>
+      <div class="form-grid">
+        <div class="form-group"><label>Payment Mode</label>
+          <select id="pm-${r.id}"><option>Cash</option><option>Card</option><option>UPI</option><option>Wallet</option></select>
+        </div>
+        <div class="form-group"><label>Loyalty Points (have ${currentUser.loyaltyPoints})</label>
+          <input type="number" id="lp-${r.id}" value="0" min="0" max="${currentUser.loyaltyPoints}">
+        </div>
+        <div class="form-group"><label>Rate Your Driver</label>
+          <select id="rate-${r.id}">
+            <option value="5">⭐⭐⭐⭐⭐ Excellent (5)</option>
+            <option value="4">⭐⭐⭐⭐ Good (4)</option>
+            <option value="3">⭐⭐⭐ Average (3)</option>
+            <option value="2">⭐⭐ Below Average (2)</option>
+            <option value="1">⭐ Poor (1)</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-accent" onclick="payTrip(${r.id})">💳 Pay Now & Download Invoice</button>
+    </div>`).join('');
+}
+
+async function payTrip(rentalId) {
+  const paymentMode = document.getElementById('pm-'+rentalId).value;
+  const points = parseInt(document.getElementById('lp-'+rentalId).value)||0;
+  const rating = parseInt(document.getElementById('rate-'+rentalId).value);
+  try {
+    showToast('Processing payment...','info');
+    const paymentResult = await apiPost('/rentals/'+rentalId+'/pay', {
+      customerId: currentUser.id,
+      paymentMode: paymentMode,
+      loyaltyPointsToUse: points
+    });
+    if(rating) await apiPost('/rentals/'+rentalId+'/rate', { customerId: currentUser.id, rating });
+    const freshUser = await apiGet('/customers/'+currentUser.id).catch(()=>null);
+    if(freshUser) { currentUser=freshUser; saveSession('customer',freshUser); }
+    let rentalData = paymentResult;
+    if(!rentalData||!rentalData.vehicle) rentalData = await apiGet('/rentals/'+rentalId).catch(()=>null);
+    if(rentalData) generateAndDownloadInvoice(rentalData, currentUser, paymentMode, points);
+    showToast('✅ Payment successful!','success');
+    loadPayPanel(); loadMyRentals(); loadHome();
+  } catch(e) { showToast('Payment failed: '+e.message,'error'); }
+}
+
+// ===== RETURN PANEL =====
+async function loadReturnPanel() {
+  const rentals = await apiGet('/rentals/customer/'+currentUser.id).catch(()=>[]);
+  const active = rentals.filter(r=>r.status==='ACTIVE'&&r.rentalType==='SELF_DRIVE');
+  const div = document.getElementById('returnList');
+  if(!active.length) {
+    div.innerHTML='<div class="card"><div class="empty-state"><div class="empty-icon">🔑</div><p>No active self-drive rentals to return</p></div></div>';
+    return;
+  }
+  div.innerHTML = active.map(r=>`
+    <div class="card">
+      <div class="card-title">🔑 Rental ${fmtRentalDisplayId(r.id)} — ${r.vehicle.brand} ${r.vehicle.model}</div>
+      <div class="form-grid">
+        <div><span style="color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:0.8px;font-weight:700">RENTED ON</span><br><strong>${fmtDate(r.rentDate)}</strong></div>
+        <div><span style="color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:0.8px;font-weight:700">BOOKED FOR</span><br><strong>${r.days||1} days</strong></div>
+        <div><span style="color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:0.8px;font-weight:700">PAID</span><br><strong>${fmtCurrency(r.rentAmount)}</strong></div>
+      </div>
+      <div class="divider"></div>
+      <div class="form-grid">
+        <div class="form-group"><label>Actual Return Date</label><input type="date" id="ret-${r.id}"></div>
+        <div class="form-group"><label>Any Damage?</label>
+          <select id="dmg-${r.id}"><option value="false">No Damage</option><option value="true">Yes — +₹2000 fee</option></select>
+        </div>
+        <div class="form-group"><label>Payment Mode (for extras)</label>
+          <select id="rpm-${r.id}"><option>Cash</option><option>Card</option><option>UPI</option><option>Wallet</option></select>
+        </div>
+      </div>
+      <button class="btn btn-green" onclick="returnVehicle(${r.id})">↩️ Return Vehicle</button>
+    </div>`).join('');
+}
+
+async function returnVehicle(rentalId) {
+  const returnDate = document.getElementById('ret-'+rentalId).value;
+  if(!returnDate) return showToast('Please enter the return date','error');
+  try {
+    await apiPost('/rentals/'+rentalId+'/return', {
+      returnDate,
+      damage: document.getElementById('dmg-'+rentalId).value==='true',
+      paymentMode: document.getElementById('rpm-'+rentalId).value
+    });
+    showToast('Vehicle returned successfully! 🙏','success');
+    loadReturnPanel();
+  } catch(e) { showToast(e.message,'error'); }
+}
+
+// ===== BOOT =====
+window.addEventListener('load', () => {
+  const saved = getSession();
+  if(saved && localStorage.getItem('ridex_role')==='customer') { currentUser=saved; initDashboard(); }
+  const theme = localStorage.getItem('ridex-theme')||'dark';
+  document.querySelectorAll('.theme-toggle-btn').forEach(btn=>btn.textContent=theme==='dark'?'☀️':'🌙');
+});
+</script>
+</body>
+</html>
